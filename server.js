@@ -33,7 +33,7 @@ let lastPostAlarm = null;
 
 // 🌍 Dashboard root
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  res.sendFile(path.join(__dirname, './public', 'index.html'));
 });
 
 // 📥 POST: Melding ontvangen
