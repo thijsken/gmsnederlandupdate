@@ -132,8 +132,19 @@ app.post('/api/units', (req, res) => {
 });
 
 // ✅ GET: Alle eenheden ophalen
-app.get('/api/units', (req, res) => {
-  res.json(eenheden);
+app.get('/api/units', async (req, res) => {
+  const serverId = req.query.serverId;
+  if (!serverId) return res.status(400).json({ message: "serverId is verplicht" });
+
+  try {
+    const snapshot = await db.ref(`servers/${serverId}/units`).once('value');
+    const data = snapshot.val() || {};
+    const units = Object.values(data);
+    res.json(units);
+  } catch(err) {
+    console.error(err);
+    res.status(500).json({ message: "Fout bij ophalen units" });
+  }
 });
 
 // ✅ POST: Luchtalarm-palen ontvangen vanuit Roblox
