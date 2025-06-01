@@ -1,5 +1,5 @@
 const admin = require('firebase-admin');
-const serviceAccount = require('./config/serviceAccountKey.json'); // pas aan naar jouw bestand
+const serviceAccount = require('./public/serviceAccountKey.json'); // pas aan naar jouw bestand
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
@@ -38,9 +38,7 @@ app.get('/', (req, res) => {
 
 // 📥 POST: Melding ontvangen
 app.post('/api/meldingen', (req, res) => {
-    console.log('Body ontvangen:', req.body);
   const { serverId, type, location, playerName } = req.body;
-  
 
   if (!serverId || !type || !location || !playerName) {
     return res.status(400).json({ message: 'Fout: ongeldige melding of geen serverId' });
