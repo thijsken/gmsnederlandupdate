@@ -201,12 +201,6 @@ fetch('/api/luchtalarm/palen')
                     <div class="max-w-3xl mx-auto">
                         <h2 class="text-2xl font-bold mb-6">Instellingen</h2>
 
-                        <select id="serverSelect">
-                            <option value="server1">Server 1</option>
-                            <option value="server2">Server 2</option>
-                            </select>
-                            <button onclick="saveServerId()">Opslaan</button>
-
                         <div class="bg-gray-800 rounded-lg p-6 mb-6">
                             <h3 class="text-xl font-semibold mb-4">Custom Kaart Upload (.png)</h3>
                             <input type="file" id="mapImageInput" accept="image/png" class="mb-4 text-sm text-gray-300">
@@ -342,193 +336,191 @@ fetch('/api/luchtalarm/palen')
         </div>
     </div>
 
-    <!-- Call Details Modal -->
-    <div id="callDetailsModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-1000 hidden">
-        <div class="bg-gray-800 rounded-lg w-full max-w-2xl">
-            <div class="p-4 border-b border-gray-700 flex justify-between items-center">
-                <h3 class="text-lg font-semibold">Melding details</h3>
-                <button id="closeCallDetails" class="text-gray-400 hover:text-gray-300">
-                    <i class="fas fa-times"></i>
+<!-- Call Details Modal -->
+<div id="callDetailsModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-1000 hidden">
+    <div class="bg-gray-800 rounded-lg w-full max-w-2xl">
+        <div class="p-4 border-b border-gray-700 flex justify-between items-center">
+            <h3 class="text-lg font-semibold">Melding details</h3>
+            <button id="closeCallDetails" class="text-gray-400 hover:text-gray-300">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="p-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <h4 class="text-sm font-medium text-gray-400">Meldingstype</h4>
+                    <p id="callType" class="text-lg">-</p>
+                </div>
+                <div>
+                    <h4 class="text-sm font-medium text-gray-400">Tijdstip</h4>
+                    <p id="callTime" class="text-lg">-</p>
+                </div>
+                <div>
+                    <h4 class="text-sm font-medium text-gray-400">Locatie</h4>
+                    <p id="callLocation" class="text-lg">-</p>
+                </div>
+                <div>
+                    <h4 class="text-sm font-medium text-gray-400">Status</h4>
+                    <p id="callStatus" class="text-lg text-yellow-400">-</p>
+                </div>
+            </div>
+            
+            <div class="mb-4">
+                <h4 class="text-sm font-medium text-gray-400">Beschrijving</h4>
+                <p id="callDescription" class="bg-gray-700 p-3 rounded-lg">-</p>
+            </div>
+            
+            <div class="mb-4">
+                <h4 class="text-sm font-medium text-gray-400">Speler informatie</h4>
+                <div id="callPlayerInfo" class="bg-gray-700 p-3 rounded-lg">
+                    <div class="flex items-center mb-2">
+                        <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center mr-3">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div>
+                            <p id="callPlayerName" class="font-medium">-</p>
+                            <p id="callPlayerId" class="text-xs text-gray-400">UserID: -</p>
+                        </div>
+                    </div>
+                    <div class="text-sm">
+                        <div class="flex items-center">
+                            <i class="fas fa-map-marker-alt mr-2"></i>
+                            <span id="callCoordinates">Locatie: -</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mb-4">
+                <h4 class="text-sm font-medium text-gray-400">Toegewezen eenheden</h4>
+                <div id="assignedUnits" class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    <!-- Dynamisch ingeladen eenheden -->
+                </div>
+            </div>
+            
+            <div class="flex justify-end space-x-2">
+                <button id="assignPoliceBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
+                    <i class="fas fa-shield-alt mr-2"></i>Politie
+                </button>
+                <button id="assignAmbulanceBtn" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">
+                    <i class="fas fa-ambulance mr-2"></i>Ambulance
+                </button>
+                <button id="assignFireBtn" class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded">
+                    <i class="fas fa-fire-extinguisher mr-2"></i>Brandweer
+                </button>
+                <button id="closeCallBtn" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded">
+                    <i class="fas fa-check mr-2"></i>Afhandelen
                 </button>
             </div>
-            <div class="p-4">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <div>
-                        <h4 class="text-sm font-medium text-gray-400">Meldingstype</h4>
-                        <p id="callType" class="text-lg">-</p>
-                    </div>
-                    <div>
-                        <h4 class="text-sm font-medium text-gray-400">Tijdstip</h4>
-                        <p id="callTime" class="text-lg">-</p>
-                    </div>
-                    <div>
-                        <h4 class="text-sm font-medium text-gray-400">Locatie</h4>
-                        <p id="callLocation" class="text-lg">-</p>
-                    </div>
-                    <div>
-                        <h4 class="text-sm font-medium text-gray-400">Status</h4>
-                        <p id="callStatus" class="text-lg text-yellow-400">-</p>
-                    </div>
-                </div>
-                
-                <div class="mb-4">
-                    <h4 class="text-sm font-medium text-gray-400">Beschrijving</h4>
-                    <p id="callDescription" class="bg-gray-700 p-3 rounded-lg">-</p>
-                </div>
-                
-                <div class="mb-4">
-                    <h4 class="text-sm font-medium text-gray-400">Speler informatie</h4>
-                    <div id="callPlayerInfo" class="bg-gray-700 p-3 rounded-lg">
-                        <div class="flex items-center mb-2">
-                            <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center mr-3">
-                                <i class="fas fa-user"></i>
-                            </div>
-                            <div>
-                                <p id="callPlayerName" class="font-medium">-</p>
-                                <p id="callPlayerId" class="text-xs text-gray-400">UserID: -</p>
-                            </div>
-                        </div>
-                        <div class="text-sm">
-                            <div class="flex items-center">
-                                <i class="fas fa-map-marker-alt mr-2"></i>
-                                <span id="callCoordinates">Locatie: -</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="mb-4">
-                    <h4 class="text-sm font-medium text-gray-400">Toegewezen eenheden</h4>
-                    <div id="assignedUnits" class="grid grid-cols-1 md:grid-cols-2 gap-2">
-                        <!-- Dynamisch ingeladen eenheden -->
-                    </div>
-                </div>
-                
-                <div class="flex justify-end space-x-2">
-                    <button id="assignPoliceBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
-                        <i class="fas fa-shield-alt mr-2"></i>Politie
-                    </button>
-                    <button id="assignAmbulanceBtn" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">
-                        <i class="fas fa-ambulance mr-2"></i>Ambulance
-                    </button>
-                    <button id="assignFireBtn" class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded">
-                        <i class="fas fa-fire-extinguisher mr-2"></i>Brandweer
-                    </button>
-                    <button id="closeCallBtn" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded">
-                        <i class="fas fa-check mr-2"></i>Afhandelen
-                    </button>
-                </div>
-            </div>
         </div>
     </div>
+</div>
 
-    <!-- Kazerenomroep Modal -->
-    <div id="kazerenomroepModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-    <div class="bg-gray-900 rounded-lg w-full max-w-md p-6 shadow-lg">
-        <h2 class="text-xl font-bold mb-4">Kazerenomroep versturen</h2>
+<!-- Kazerenomroep Modal -->
+<div id="kazerenomroepModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+  <div class="bg-gray-900 rounded-lg w-full max-w-md p-6 shadow-lg">
+    <h2 class="text-xl font-bold mb-4">Kazerenomroep versturen</h2>
 
-        <label class="block text-sm font-medium mb-1">Adres van melding</label>
-        <input id="kazerenAdres" type="text" placeholder="Type hier Het Adders in." class="w-full border p-2 rounded mb-3" />
+    <label class="block text-sm font-medium mb-1">Adres van melding</label>
+    <input id="kazerenAdres" type="text" placeholder="Type hier Het Adders in." class="w-full border p-2 rounded mb-3" />
 
-            <label class="block text-sm font-medium mb-1">Selecteer voertuig</label>
-        <select id="voertuigSelect" class="w-full border p-2 rounded mb-4">
-        <option value="">-- Kies voertuig --</option>
-        <option value="Politie">Politie</option>
-        <option value="Brandweer">Brandweer</option>
-        <option value="Ambulance">Ambulance</option>
-        <option value="Rijkswaterstaat">Rijkswaterstaat</option>
-        </select>
+        <label class="block text-sm font-medium mb-1">Selecteer voertuig</label>
+    <select id="voertuigSelect" class="w-full border p-2 rounded mb-4">
+    <option value="">-- Kies voertuig --</option>
+    <option value="Politie">Politie</option>
+    <option value="Brandweer">Brandweer</option>
+    <option value="Ambulance">Ambulance</option>
+    <option value="Rijkswaterstaat">Rijkswaterstaat</option>
+    </select>
 
-        <label class="block text-sm font-medium mb-1">Informatie</label>
-        <textarea id="kazerenInfo" placeholder="Bijv. brandmelding bij woning" class="w-full border p-2 rounded mb-4"></textarea>
+    <label class="block text-sm font-medium mb-1">Informatie</label>
+    <textarea id="kazerenInfo" placeholder="Bijv. brandmelding bij woning" class="w-full border p-2 rounded mb-4"></textarea>
 
-        <div class="flex justify-end gap-2">
-        <button onclick="sluitKazerenModal()" class="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded">Sluit</button>
-        <button onclick="verstuurKazerenomroep()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded">Verstuur</button>
-        </div>
-
-        <div id="kazerenFeedback" class="text-green-600 text-sm mt-3 hidden">✅ Verstuurd!</div>
-    </div>
-    </div>
-    <!-- amberAlaert Modal -->
-    <div id="amberModal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 hidden">
-    <div class="bg-gray-800 rounded-lg w-full max-w-lg p-6">
-        <div class="flex justify-between items-center mb-4">
-        <h2 class="text-xl font-bold">Start Amber Alert</h2>
-        <button onclick="closeAmberModal()" class="text-gray-400 hover:text-white"><i class="fas fa-times"></i></button>
-        </div>
-
-        <label class="block text-sm font-medium mb-1">Naam van speler</label>
-        <input type="text" id="amberPlayerName" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 mb-3" placeholder="Bijv. Jan Jansen">
-
-        <label class="block text-sm font-medium mb-1">UserID</label>
-        <input type="text" id="amberUserId" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 mb-3" placeholder="Roblox UserId">
-
-        <label class="block text-sm font-medium mb-1">Locatie laatst gezien</label>
-        <input type="text" id="amberLocation" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 mb-3">
-
-        <label class="block text-sm font-medium mb-1">Beschrijving</label>
-        <textarea id="amberDescription" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 mb-3" rows="3"></textarea>
-
-        <div class="flex justify-end space-x-2">
-        <button onclick="closeAmberModal()" class="bg-gray-600 hover:bg-gray-500 text-white px-4 py-2 rounded">Annuleer</button>
-        <button onclick="saveAmberAlert()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded">Start Alert</button>
-        </div>
-    </div>
+    <div class="flex justify-end gap-2">
+      <button onclick="sluitKazerenModal()" class="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded">Sluit</button>
+      <button onclick="verstuurKazerenomroep()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded">Verstuur</button>
     </div>
 
-    <!--nlalertModal-->
-    <div id="nlalertModal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 hidden">
-    <div class="bg-gray-800 rounded-lg w-full max-w-lg p-6">
-        <div class="flex justify-between items-center mb-4">
-        <h2 class="text-xl font-bold">Start NL-Alert</h2>
-        <button onclick="closeNLAlertModal()" class="text-gray-400 hover:text-white"><i class="fas fa-times"></i></button>
-        </div>
-
-        <label class="block text-sm font-medium mb-1">Titel</label>
-        <input type="text" id="nlalertTitle" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 mb-3">
-
-        <label class="block text-sm font-medium mb-1">Bericht</label>
-        <textarea id="nlalertMessage" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 mb-3" rows="3"></textarea>
-
-        <label class="block text-sm font-medium mb-1">Locatie</label>
-        <input type="text" id="nlalertLocation" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 mb-3">
-
-        <div class="flex justify-end space-x-2">
-        <button onclick="closeNLAlertModal()" class="bg-gray-600 hover:bg-gray-500 text-white px-4 py-2 rounded">Annuleer</button>
-        <button onclick="saveNLAlert()" class="bg-yellow-500 hover:bg-yellow-600 text-black px-4 py-2 rounded">Verzend NL-Alert</button>
-        </div>
+    <div id="kazerenFeedback" class="text-green-600 text-sm mt-3 hidden">✅ Verstuurd!</div>
+  </div>
+</div>
+<!-- amberAlaert Modal -->
+<div id="amberModal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 hidden">
+  <div class="bg-gray-800 rounded-lg w-full max-w-lg p-6">
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-xl font-bold">Start Amber Alert</h2>
+      <button onclick="closeAmberModal()" class="text-gray-400 hover:text-white"><i class="fas fa-times"></i></button>
     </div>
+
+    <label class="block text-sm font-medium mb-1">Naam van speler</label>
+    <input type="text" id="amberPlayerName" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 mb-3" placeholder="Bijv. Jan Jansen">
+
+    <label class="block text-sm font-medium mb-1">UserID</label>
+    <input type="text" id="amberUserId" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 mb-3" placeholder="Roblox UserId">
+
+    <label class="block text-sm font-medium mb-1">Locatie laatst gezien</label>
+    <input type="text" id="amberLocation" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 mb-3">
+
+    <label class="block text-sm font-medium mb-1">Beschrijving</label>
+    <textarea id="amberDescription" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 mb-3" rows="3"></textarea>
+
+    <div class="flex justify-end space-x-2">
+      <button onclick="closeAmberModal()" class="bg-gray-600 hover:bg-gray-500 text-white px-4 py-2 rounded">Annuleer</button>
+      <button onclick="saveAmberAlert()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded">Start Alert</button>
     </div>
-    
-    <!--p2000Modal -->
-    <div id="p2000Modal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 hidden">
-    <div class="bg-gray-800 rounded-lg w-full max-w-xl p-6">
-        <div class="flex justify-between items-center mb-4">
-        <h2 class="text-xl font-bold">Start P2000 Alarm</h2>
-        <button onclick="closeP2000Modal()" class="text-gray-400 hover:text-white"><i class="fas fa-times"></i></button>
-        </div>
-
-        <label class="block text-sm font-medium mb-1">Straat + huisnummer</label>
-        <input type="text" id="p2000Adres" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 mb-3" placeholder="Bijv. Dorpsstraat 15">
-
-        <label class="block text-sm font-medium mb-1">Voertuignummers (gescheiden door komma)</label>
-        <input type="text" id="p2000Voertuigen" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 mb-3" placeholder="Bijv. 06-1234, 07-5678">
-
-        <label class="block text-sm font-medium mb-1">Wat is er aan de hand?</label>
-        <textarea id="p2000Situatie" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 mb-3" rows="3" placeholder="Bijv. brand in woning, rookontwikkeling bij zolder"></textarea>
-
-        <label class="block text-sm font-medium mb-1">Selecteer post</label>
-        <select id="p2000PostSelect" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 mb-4">
-        <option value="">-- Kies een post --</option>
-        </select>
-
-        <div class="flex justify-end space-x-2">
-        <button onclick="closeP2000Modal()" class="bg-gray-600 hover:bg-gray-500 text-white px-4 py-2 rounded">Annuleer</button>
-        <button onclick="verstuurP2000Alarm()" class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded">Verstuur Alarm</button>
-        </div>
+  </div>
+</div>
+<!--nlalertModal-->
+<div id="nlalertModal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 hidden">
+  <div class="bg-gray-800 rounded-lg w-full max-w-lg p-6">
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-xl font-bold">Start NL-Alert</h2>
+      <button onclick="closeNLAlertModal()" class="text-gray-400 hover:text-white"><i class="fas fa-times"></i></button>
     </div>
+
+    <label class="block text-sm font-medium mb-1">Titel</label>
+    <input type="text" id="nlalertTitle" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 mb-3">
+
+    <label class="block text-sm font-medium mb-1">Bericht</label>
+    <textarea id="nlalertMessage" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 mb-3" rows="3"></textarea>
+
+    <label class="block text-sm font-medium mb-1">Locatie</label>
+    <input type="text" id="nlalertLocation" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 mb-3">
+
+    <div class="flex justify-end space-x-2">
+      <button onclick="closeNLAlertModal()" class="bg-gray-600 hover:bg-gray-500 text-white px-4 py-2 rounded">Annuleer</button>
+      <button onclick="saveNLAlert()" class="bg-yellow-500 hover:bg-yellow-600 text-black px-4 py-2 rounded">Verzend NL-Alert</button>
     </div>
+  </div>
+</div>
+<!--p2000Modal -->
+<div id="p2000Modal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 hidden">
+  <div class="bg-gray-800 rounded-lg w-full max-w-xl p-6">
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-xl font-bold">Start P2000 Alarm</h2>
+      <button onclick="closeP2000Modal()" class="text-gray-400 hover:text-white"><i class="fas fa-times"></i></button>
+    </div>
+
+    <label class="block text-sm font-medium mb-1">Straat + huisnummer</label>
+    <input type="text" id="p2000Adres" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 mb-3" placeholder="Bijv. Dorpsstraat 15">
+
+    <label class="block text-sm font-medium mb-1">Voertuignummers (gescheiden door komma)</label>
+    <input type="text" id="p2000Voertuigen" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 mb-3" placeholder="Bijv. 06-1234, 07-5678">
+
+    <label class="block text-sm font-medium mb-1">Wat is er aan de hand?</label>
+    <textarea id="p2000Situatie" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 mb-3" rows="3" placeholder="Bijv. brand in woning, rookontwikkeling bij zolder"></textarea>
+
+    <label class="block text-sm font-medium mb-1">Selecteer post</label>
+    <select id="p2000PostSelect" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 mb-4">
+      <option value="">-- Kies een post --</option>
+    </select>
+
+    <div class="flex justify-end space-x-2">
+      <button onclick="closeP2000Modal()" class="bg-gray-600 hover:bg-gray-500 text-white px-4 py-2 rounded">Annuleer</button>
+      <button onclick="verstuurP2000Alarm()" class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded">Verstuur Alarm</button>
+    </div>
+  </div>
+</div>
 
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
@@ -554,11 +546,10 @@ fetch('/api/luchtalarm/palen')
   });
   // end
         console.log('🌐 Start fetchEmergencyReports()');
-        const serverId = localStorage.getItem('serverId') || 'demo001'; // ← instellen of ophalen
         // API Configuration
         // https://gmsnederland-production.up.railway.app
         const API_URL = 'https://gmsnederland-production.up.railway.app';
-        fetch(`${API_URL}/api/meldingen?serverId=${serverId}`)
+        fetch(`${API_URL}/api/meldingen`)
         const API_BASE_URL = 'gmsnederland-production.up.railway.app'; // Wijzig dit naar je backend URL
         const API_KEY = 'gms_s9l5z0k2hz8kvd5ccoxus'; // vervang dit met de juiste sleutel
         let currentCallId = null;
@@ -633,13 +624,6 @@ fetch('/api/luchtalarm/palen')
         document.getElementById('closeCallBtn').addEventListener('click', closeCall);
 
         // Functions
-
-        function saveServerId() {
-  const id = document.getElementById('serverSelect').value;
-  localStorage.setItem('serverId', id);
-  showNotification(`ServerId ingesteld op: ${id}`);
-}
-
 
 function scanKenteken() {
   const input = document.getElementById('anprScanInput').value.trim().toUpperCase();
@@ -1601,7 +1585,7 @@ let vorigeMeldingenTimestamps = [];
 let bekendeMeldingen = new Set();
 
 function fetchEmergencyReports() {
-    fetch(`${API_URL}/api/meldingen?serverId=${serverId}`)
+    fetch(`${API_URL}/api/meldingen`)
         .then(res => {
             if (!res.ok) {
                 return res.json().then(errData => {
