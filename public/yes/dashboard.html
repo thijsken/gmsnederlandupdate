@@ -549,7 +549,9 @@ fetch('/api/luchtalarm/palen')
         // API Configuration
         // https://gmsnederland-production.up.railway.app
         const API_URL = 'https://gmsnederland-production.up.railway.app';
+        localStorage.setItem("serverId", serverId); // dit onthoudt het in de browser
         const serverId = localStorage.getItem("serverId") || "gms_main";
+        console.log("✅ Gekozen serverId:", serverId);
         const API_BASE_URL = 'gmsnederland-production.up.railway.app'; // Wijzig dit naar je backend URL
         const API_KEY = 'gms_s9l5z0k2hz8kvd5ccoxus'; // vervang dit met de juiste sleutel
         let currentCallId = null;
@@ -1591,27 +1593,29 @@ function fetchEmergencyReports() {
     fetch(url)
         .then(res => {
             if (!res.ok) {
-                return res.json().then(err => {
-                    throw new Error(`❌ Server gaf fout: ${res.status} - ${JSON.stringify(err)}`);
+                return res.json().then(errData => {
+                    throw new Error(`Server gaf fout: ${res.status} - ${JSON.stringify(errData)}`);
                 });
             }
             return res.json();
         })
         .then(data => {
             if (!Array.isArray(data)) {
-                console.warn("📛 Verwachtte een array, kreeg:", data);
-                showNotification("Fout: ongeldige data ontvangen van server", "error");
-                return;
+                throw new Error("📛 Ongeldig antwoord van server (geen lijst): " + JSON.stringify(data));
             }
 
             const nieuweMeldingen = data.filter(m =>
                 m.status === 'new' && !bekendeMeldingen.has(m.timestamp)
             );
 
-            // ... rest van je logica ...
+            nieuweMeldingen.forEach(melding => {
+                bekendeMeldingen.add(melding.timestamp);
+                // Voeg je eigen logica hier in (bijv. calls.push, kaarten updaten, enz.)
+                console.log("🚨 Nieuwe melding:", melding);
+            });
         })
         .catch(err => {
-            console.error("❌ Fout bij ophalen meldingen:", err);
+            console.error("❌ Fout bij ophalen meldingen:", err.message);
             showNotification("Fout bij ophalen meldingen: " + err.message, "error");
         });
 }
@@ -1855,6 +1859,7 @@ function zoomToCall(callId) {
 
 document.addEventListener('DOMContentLoaded', function() {
         fetchEmergencyReports();
+        setInterval(fetchEmergencyReports, 30000);
     // Selecteer de 'Meer info' knoppen
     const meerInfoButtons = document.querySelectorAll('meerinfo');
     
