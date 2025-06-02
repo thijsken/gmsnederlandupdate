@@ -549,7 +549,7 @@ fetch('/api/luchtalarm/palen')
         // API Configuration
         // https://gmsnederland-production.up.railway.app
         const API_URL = 'https://gmsnederland-production.up.railway.app';
-        const serverId = "gms_main"; // of haal dit dynamisch op
+        const serverId = localStorage.getItem("serverId") || "gms_main";
         fetch(`${API_URL}/api/meldingen?serverId=${serverId}`)
         const API_BASE_URL = 'gmsnederland-production.up.railway.app'; // Wijzig dit naar je backend URL
         const API_KEY = 'gms_s9l5z0k2hz8kvd5ccoxus'; // vervang dit met de juiste sleutel
@@ -1587,7 +1587,7 @@ let bekendeMeldingen = new Set();
 
 function fetchEmergencyReports() {
         const serverId = "gms_main"; // of haal deze uit localStorage
-    fetch(`${API_URL}/api/meldingen?serverId=${serverId}`)
+    fetch(`${API_URL}/api/meldingen?serverId=gms_main`)
         .then(res => {
             if (!res.ok) {
                 return res.json().then(errData => {
