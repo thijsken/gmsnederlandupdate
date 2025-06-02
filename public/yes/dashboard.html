@@ -1585,72 +1585,34 @@ let vorigeMeldingenTimestamps = [];
 let bekendeMeldingen = new Set();
 
 function fetchEmergencyReports() {
-    if (!serverId) {
-        console.error("❌ Geen serverId ingesteld!");
-        showNotification("Server ID ontbreekt!", "error");
-        return;
-    }
-
     const url = `${API_URL}/api/meldingen?serverId=${encodeURIComponent(serverId)}`;
     console.log("🌐 Ophalen meldingen van:", url);
 
     fetch(url)
         .then(res => {
             if (!res.ok) {
-                return res.json().then(errData => {
-                    throw new Error(`Server gaf fout: ${res.status} - ${JSON.stringify(errData)}`);
+                return res.json().then(err => {
+                    throw new Error(`❌ Server gaf fout: ${res.status} - ${JSON.stringify(err)}`);
                 });
             }
             return res.json();
         })
         .then(data => {
             if (!Array.isArray(data)) {
-                throw new Error('📛 API gaf geen lijst terug');
+                console.warn("📛 Verwachtte een array, kreeg:", data);
+                showNotification("Fout: ongeldige data ontvangen van server", "error");
+                return;
             }
 
             const nieuweMeldingen = data.filter(m =>
                 m.status === 'new' && !bekendeMeldingen.has(m.timestamp)
             );
 
-            nieuweMeldingen.forEach(melding => {
-                bekendeMeldingen.add(melding.timestamp);
-
-                const call = {
-                    id: melding.timestamp,
-                    ...melding,
-                    coordinates: melding.coordinates || { x: 4.8952, y: 52.3702, z: 0 },
-                    status: 'new'
-                };
-
-                calls.push(call);
-                updateCalls();
-                voegNieuweMeldingToe(call);
-
-                const icon = L.divIcon({
-                    className: '',
-                    html: `
-                        <div style="position: relative; transform: translate(-50%, -50%); text-align: center;">
-                            <img src="https://www.roblox.com/headshot-thumbnail/image?userId=${call.userId}&width=100&height=100&format=png"
-                                 onerror="this.onerror=null;this.src='https://via.placeholder.com/32';"
-                                 style="width: 32px; height: 32px; border-radius: 50%; border: 2px solid #ef4444;" />
-                            <div style="width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 10px solid #ef4444; margin: auto;"></div>
-                        </div>
-                    `,
-                    iconSize: [32, 42],
-                    iconAnchor: [16, 42]
-                });
-
-                const marker = L.marker([call.coordinates.y, call.coordinates.x], { icon })
-                    .addTo(mainMap)
-                    .addTo(dashboardMap);
-
-                emergencyMarkers[call.id] = marker;
-                marker.bindPopup(`<b>112 - ${call.type}</b><br>${call.location}<br>Speler: ${call.playerName}`);
-            });
+            // ... rest van je logica ...
         })
         .catch(err => {
-            console.error('❌ Fout bij ophalen meldingen:', err.message || err);
-            showNotification('Fout bij ophalen meldingen: ' + err.message, 'error');
+            console.error("❌ Fout bij ophalen meldingen:", err);
+            showNotification("Fout bij ophalen meldingen: " + err.message, "error");
         });
 }
 
