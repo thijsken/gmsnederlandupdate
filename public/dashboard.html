@@ -202,6 +202,14 @@ fetch('/api/luchtalarm/palen')
                         <h2 class="text-2xl font-bold mb-6">Instellingen</h2>
 
                         <div class="bg-gray-800 rounded-lg p-6 mb-6">
+                            <h3 class="text-xl font-semibold mb-4">Kies de Server die je wil zien.</h3>
+                            <input type="text" id="serverIdInput" class="bg-gray-700 border border-gray-600 rounded px-4 py-2 w-full" placeholder="Bijv. server123">
+                            <button onclick="saveServerId()" class="bg-blue-600 hover:bg-blue-700 text-white mt-2 px-4 py-2 rounded">
+                                Opslaan Server ID
+                            </button>
+                        </div>
+
+                        <div class="bg-gray-800 rounded-lg p-6 mb-6">
                             <h3 class="text-xl font-semibold mb-4">Custom Kaart Upload (.png)</h3>
                             <input type="file" id="mapImageInput" accept="image/png" class="mb-4 text-sm text-gray-300">
                             <button onclick="uploadMapImage()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
