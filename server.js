@@ -38,6 +38,9 @@ app.get('/', (req, res) => {
 
 // 👇 Voeg dit toe boven je routes
 function requireServerId(req, res, next) {
+    console.log('Incoming serverId query:', req.query.serverId);
+  console.log('Incoming serverId body:', req.body.serverId);
+  
   const serverId = req.query.serverId || req.body.serverId;
   if (!serverId) {
     return res.status(400).json({ message: 'serverId is verplicht' });
