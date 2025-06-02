@@ -1307,17 +1307,14 @@ const call = calls.find(c => String(c.id) === String(callId));
     }
 
     // 🌐 PATCH naar backend
-    fetch(`${API_URL}/api/meldingen/${callId}/status`, {
-        method: 'PATCH',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${currentApiKey}`, // Voeg API-sleutel toe als vereist
-            'serverId': getServerId() // Voeg serverId toe als header
-        },
-        body: JSON.stringify({ status: 'accepted', 
-        serverId: getServerId() 
-      })
-    })
+fetch(`${API_URL}/api/meldingen/${callId}/status?serverId=${encodeURIComponent(getServerId())}`, {
+    method: 'PATCH',
+    headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${currentApiKey}`
+    },
+    body: JSON.stringify({ status: 'accepted' })
+})
     .then(res => {
         console.log(`🌐 PATCH response status: ${res.status}`);
         if (!res.ok) throw new Error("PATCH mislukt");
