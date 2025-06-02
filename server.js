@@ -12,6 +12,7 @@ const express = require('express');
 const path = require('path');
 const cors = require('cors');
 const { error } = require('console');
+const bekendeServers = new Set();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -31,33 +32,17 @@ let alarmQueue = [];
 let laatsteLuchtalarmActie = null;
 let lastPostAlarm = null;
 
-async function bestaatServer(serverId) {
-  const ref = db.ref(`servers/${serverId}`);
-  const snapshot = await ref.once('value');
-  return snapshot.exists();
-}
-
 // 🌍 Dashboard root
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // 📥 POST: Melding ontvangen
-app.post('/api/meldingen', async (req, res) => {
+app.post('/api/meldingen', (req, res) => {
   const { serverId, type, location, playerName } = req.body;
 
   if (!serverId || !type || !location || !playerName) {
-    return res.status(400).json({ message: 'Fout: ongeldige melding of ontbrekende serverId' });
-  }
-
-  try {
-    const bestaat = await bestaatServer(serverId);
-    if (!bestaat) {
-      return res.status(404).json({ message: `❌ Server ${serverId} bestaat niet in Firebase` });
-    }
-  } catch (err) {
-    console.error('🔥 Fout bij controleren serverId:', err);
-    return res.status(500).json({ message: 'Fout bij servercontrole' });
+    return res.status(400).json({ message: 'Fout: ongeldige melding of geen serverId' });
   }
 
   const melding = {
@@ -314,6 +299,20 @@ app.post('/api/anpr', (req, res) => {
 app.get('/api/nlalert', (req, res) => {
   res.json(nlAlerts);
 })
+
+
+async function bestaatServer(serverId) {
+  if (bekendeServers.has(serverId)) return true;
+
+  const ref = db.ref(`servers/${serverId}`);
+  const snapshot = await ref.once('value');
+  if (snapshot.exists()) {
+    bekendeServers.add(serverId); // cache het
+    return true;
+  }
+  return false;
+}
+
 // 🚀 Start server
 app.listen(PORT, () => {
   console.log(`🚀 Server draait op http://localhost:${PORT}`);
