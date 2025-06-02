@@ -635,6 +635,17 @@ fetch('/api/luchtalarm/palen')
 
         // Functions
 
+function saveServerId() {
+    const input = document.getElementById('serverIdInput').value.trim();
+    if (input) {
+        localStorage.setItem('serverId', input);
+        showNotification(`✅ Server ID opgeslagen als: ${input}`, 'success');
+    } else {
+        showNotification('❌ Server ID mag niet leeg zijn.', 'error');
+    }
+}
+
+
 function scanKenteken() {
   const input = document.getElementById('anprScanInput').value.trim().toUpperCase();
   const result = document.getElementById('anprResult');
