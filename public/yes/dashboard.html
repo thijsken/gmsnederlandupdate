@@ -1297,11 +1297,11 @@ const call = calls.find(c => String(c.id) === String(callId));
     }
 
     // 🌐 PATCH naar backend
-    fetch(`${API_URL}/api/meldingen/${callId}/status`, {
+    fetch(`${API_URL}/api/meldingen/${callId}/status?serverId=${serverId}`, {
         method: 'PATCH',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${currentApiKey}` // Voeg API-sleutel toe als vereist
+            'Authorization': `Bearer ${currentApiKey}` // als je dat gebruikt
         },
         body: JSON.stringify({ status: 'accepted' })
     })
