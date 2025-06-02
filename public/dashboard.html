@@ -549,7 +549,9 @@ fetch('/api/luchtalarm/palen')
         // API Configuration
         // https://gmsnederland-production.up.railway.app
         const API_URL = 'https://gmsnederland-production.up.railway.app';
-        fetch(`${API_URL}/api/meldingen`)
+        const serverId = localStorage.getItem("serverId") || "testServer1";
+        console.log("✅ Gekozen serverId:", serverId);
+        localStorage.setItem("serverId", serverId); // dit onthoudt het in de browser
         const API_BASE_URL = 'gmsnederland-production.up.railway.app'; // Wijzig dit naar je backend URL
         const API_KEY = 'gms_s9l5z0k2hz8kvd5ccoxus'; // vervang dit met de juiste sleutel
         let currentCallId = null;
@@ -1295,11 +1297,11 @@ const call = calls.find(c => String(c.id) === String(callId));
     }
 
     // 🌐 PATCH naar backend
-    fetch(`${API_URL}/api/meldingen/${callId}/status`, {
+    fetch(`${API_URL}/api/meldingen/${callId}/status?serverId=${serverId}`, {
         method: 'PATCH',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${currentApiKey}` // Voeg API-sleutel toe als vereist
+            'Authorization': `Bearer ${currentApiKey}` // als je dat gebruikt
         },
         body: JSON.stringify({ status: 'accepted' })
     })
@@ -1578,7 +1580,6 @@ if (call.coordinates) {
 
         function logout() {
             localStorage.removeItem('apiKey');
-            localStorage.removeItem('serverId');
             window.location.href = 'index.html';
         }
 
@@ -1586,7 +1587,10 @@ let vorigeMeldingenTimestamps = [];
 let bekendeMeldingen = new Set();
 
 function fetchEmergencyReports() {
-    fetch(`${API_URL}/api/meldingen`)
+    const url = `${API_URL}/api/meldingen?serverId=${encodeURIComponent(serverId)}`;
+    console.log("🌐 Ophalen meldingen van:", url);
+
+    fetch(url)
         .then(res => {
             if (!res.ok) {
                 return res.json().then(errData => {
@@ -1597,7 +1601,7 @@ function fetchEmergencyReports() {
         })
         .then(data => {
             if (!Array.isArray(data)) {
-                throw new Error('Data is geen array');
+                throw new Error("📛 Ongeldig antwoord van server (geen lijst): " + JSON.stringify(data));
             }
 
             const nieuweMeldingen = data.filter(m =>
@@ -1605,45 +1609,14 @@ function fetchEmergencyReports() {
             );
 
             nieuweMeldingen.forEach(melding => {
-                bekendeMeldingen.add(melding.timestamp); // markeer als gezien
-
-                const call = {
-                    id: melding.timestamp,
-                    ...melding,
-                    coordinates: melding.coordinates || { x: 4.8952, y: 52.3702, z: 0 },
-                    status: 'new'
-                };
-
-                calls.push(call);
-                updateCalls();
-                voegNieuweMeldingToe(call);
-
-                // Voeg marker toe
-                const icon = L.divIcon({
-                    className: '',
-                    html: `
-                        <div style="position: relative; transform: translate(-50%, -50%); text-align: center;">
-                            <img src="https://www.roblox.com/headshot-thumbnail/image?userId=${call.userId}&width=100&height=100&format=png"
-                                 onerror="this.onerror=null;this.src='https://via.placeholder.com/32';"
-                                 style="width: 32px; height: 32px; border-radius: 50%; border: 2px solid #ef4444;" />
-                            <div style="width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 10px solid #ef4444; margin: auto;"></div>
-                        </div>
-                    `,
-                    iconSize: [32, 42],
-                    iconAnchor: [16, 42]
-                });
-
-                const marker = L.marker([call.coordinates.y, call.coordinates.x], { icon })
-                    .addTo(mainMap)
-                    .addTo(dashboardMap);
-
-                emergencyMarkers[call.id] = marker;
-                marker.bindPopup(`<b>112 - ${call.type}</b><br>${call.location}<br>Speler: ${call.playerName}`);
+                bekendeMeldingen.add(melding.timestamp);
+                // Voeg je eigen logica hier in (bijv. calls.push, kaarten updaten, enz.)
+                console.log("🚨 Nieuwe melding:", melding);
             });
         })
         .catch(err => {
-            console.error('❌ Fout bij ophalen meldingen:', err);
-            showNotification('Kon meldingen niet ophalen', 'error');
+            console.error("❌ Fout bij ophalen meldingen:", err.message);
+            showNotification("Fout bij ophalen meldingen: " + err.message, "error");
         });
 }
 
@@ -1885,6 +1858,8 @@ function zoomToCall(callId) {
 
 
 document.addEventListener('DOMContentLoaded', function() {
+        fetchEmergencyReports();
+        setInterval(fetchEmergencyReports, 30000);
     // Selecteer de 'Meer info' knoppen
     const meerInfoButtons = document.querySelectorAll('meerinfo');
     
