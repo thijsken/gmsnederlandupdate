@@ -1825,8 +1825,6 @@ function clearCalls() {
     callList.innerHTML = '';
 }
 
-
-
 // Functie om noodmeldingen weer te geven op de kaart
 function displayEmergencyReports(reports) {
     // Verwijder oude markers
@@ -1901,7 +1899,6 @@ function zoomToCall(callId) {
     mainMap.setView([call.coordinates.y, call.coordinates.x], 17); // Zoom in op locatie
     emergencyMarkers[call.id].openPopup(); // Open popup op de marker
 }
-
 
 document.addEventListener('DOMContentLoaded', function() {
     // Selecteer de 'Meer info' knoppen
@@ -2016,13 +2013,13 @@ function meerInfo(callId) {
 }
 
 // Functie om een melding toe te voegen aan recentCalls
-        function addNewCall(call) {
+function addNewCall(call) {
     console.log("Nieuwe melding toegevoegd:", call);
     recentCalls.push(call);
     console.log("recentCalls na toevoegen:", recentCalls);
 }
 
-        function renderAcceptedCalls() {
+function renderAcceptedCalls() {
     const container = document.getElementById('acceptedCallsList');
     if (!container) return;
     container.innerHTML = '';
