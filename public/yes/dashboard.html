@@ -1586,8 +1586,16 @@ let vorigeMeldingenTimestamps = [];
 let bekendeMeldingen = new Set();
 
 function fetchEmergencyReports() {
-        const serverId = "gms_main"; // of haal deze uit localStorage
-    fetch(`${API_URL}/api/meldingen?serverId=gms_main`)
+    if (!serverId) {
+        console.error("❌ Geen serverId ingesteld!");
+        showNotification("Server ID ontbreekt!", "error");
+        return;
+    }
+
+    const url = `${API_URL}/api/meldingen?serverId=${encodeURIComponent(serverId)}`;
+    console.log("🌐 Ophalen meldingen van:", url);
+
+    fetch(url)
         .then(res => {
             if (!res.ok) {
                 return res.json().then(errData => {
@@ -1598,7 +1606,7 @@ function fetchEmergencyReports() {
         })
         .then(data => {
             if (!Array.isArray(data)) {
-                throw new Error('Data is geen array');
+                throw new Error('📛 API gaf geen lijst terug');
             }
 
             const nieuweMeldingen = data.filter(m =>
@@ -1606,7 +1614,7 @@ function fetchEmergencyReports() {
             );
 
             nieuweMeldingen.forEach(melding => {
-                bekendeMeldingen.add(melding.timestamp); // markeer als gezien
+                bekendeMeldingen.add(melding.timestamp);
 
                 const call = {
                     id: melding.timestamp,
@@ -1619,7 +1627,6 @@ function fetchEmergencyReports() {
                 updateCalls();
                 voegNieuweMeldingToe(call);
 
-                // Voeg marker toe
                 const icon = L.divIcon({
                     className: '',
                     html: `
@@ -1643,8 +1650,8 @@ function fetchEmergencyReports() {
             });
         })
         .catch(err => {
-            console.error('❌ Fout bij ophalen meldingen:', err);
-            showNotification('Kon meldingen niet ophalen', 'error');
+            console.error('❌ Fout bij ophalen meldingen:', err.message || err);
+            showNotification('Fout bij ophalen meldingen: ' + err.message, 'error');
         });
 }
 
