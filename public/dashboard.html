@@ -1578,7 +1578,8 @@ if (call.coordinates) {
 
         function logout() {
             localStorage.removeItem('apiKey');
-            window.location.href = 'inlog.html';
+            localStorage.removeItem('serverId');
+            window.location.href = 'index.html';
         }
 
 let vorigeMeldingenTimestamps = [];
