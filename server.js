@@ -68,6 +68,7 @@ app.post('/api/meldingen', (req, res) => {
 
 // 📤 GET: Alle meldingen ophalen
 app.get('/api/meldingen', (req, res) => {
+  console.log('Query parameters:', req.query);
   const serverId = req.query.serverId;
   if (!serverId) {
     return res.status(400).json({ message: 'serverId is verplicht' });
