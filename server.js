@@ -31,17 +31,33 @@ let alarmQueue = [];
 let laatsteLuchtalarmActie = null;
 let lastPostAlarm = null;
 
+async function bestaatServer(serverId) {
+  const ref = db.ref(`servers/${serverId}`);
+  const snapshot = await ref.once('value');
+  return snapshot.exists();
+}
+
 // 🌍 Dashboard root
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // 📥 POST: Melding ontvangen
-app.post('/api/meldingen', (req, res) => {
+app.post('/api/meldingen', async (req, res) => {
   const { serverId, type, location, playerName } = req.body;
 
   if (!serverId || !type || !location || !playerName) {
-    return res.status(400).json({ message: 'Fout: ongeldige melding of geen serverId' });
+    return res.status(400).json({ message: 'Fout: ongeldige melding of ontbrekende serverId' });
+  }
+
+  try {
+    const bestaat = await bestaatServer(serverId);
+    if (!bestaat) {
+      return res.status(404).json({ message: `❌ Server ${serverId} bestaat niet in Firebase` });
+    }
+  } catch (err) {
+    console.error('🔥 Fout bij controleren serverId:', err);
+    return res.status(500).json({ message: 'Fout bij servercontrole' });
   }
 
   const melding = {

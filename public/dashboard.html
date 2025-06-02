@@ -203,7 +203,12 @@ fetch('/api/luchtalarm/palen')
 
                         <div class="bg-gray-800 rounded-lg p-6 mb-6">
                             <h3 class="text-xl font-semibold mb-4">Kies de Server die je wil zien.</h3>
-                            <input type="text" id="serverIdInput" class="bg-gray-700 border border-gray-600 rounded px-4 py-2 w-full" placeholder="Bijv. server123">
+                            <select id="serverIdInput" class="bg-gray-700 border border-gray-600 rounded px-4 py-2 w-full">
+                                <option value="">-- Selecteer jouw server --</option>
+                                <option value="server_haren">Server Haren</option>
+                                <option value="server_tilburg">Server Tilburg</option>
+                                <option value="server_apeldoorn">Server Apeldoorn</option>
+                            </select>
                             <button onclick="saveServerId()" class="bg-blue-600 hover:bg-blue-700 text-white mt-2 px-4 py-2 rounded">
                                 Opslaan Server ID
                             </button>
@@ -636,15 +641,14 @@ fetch('/api/luchtalarm/palen')
         // Functions
 
 function saveServerId() {
-    const input = document.getElementById('serverIdInput').value.trim();
-    if (input) {
-        localStorage.setItem('serverId', input);
-        showNotification(`✅ Server ID opgeslagen als: ${input}`, 'success');
-    } else {
-        showNotification('❌ Server ID mag niet leeg zijn.', 'error');
+    const serverId = document.getElementById('serverIdInput').value;
+    if (!serverId) {
+        showNotification(" Kies een geldige server id", "error");
+        return;
     }
+    localStorage.setItem('serverId', serverId);
+    showNotification(' Server opgeslagen: ${serverid}', "succes");
 }
-
 
 function scanKenteken() {
   const input = document.getElementById('anprScanInput').value.trim().toUpperCase();
