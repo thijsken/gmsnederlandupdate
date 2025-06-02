@@ -1586,7 +1586,7 @@ let vorigeMeldingenTimestamps = [];
 let bekendeMeldingen = new Set();
 
 function fetchEmergencyReports() {
-    fetch(`${API_URL}/api/meldingen`)
+    fetch(`${API_URL}/api/meldingen?serverId=${serverId}`)
         .then(res => {
             if (!res.ok) {
                 return res.json().then(errData => {
