@@ -1311,9 +1311,12 @@ const call = calls.find(c => String(c.id) === String(callId));
         method: 'PATCH',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${currentApiKey}` // Voeg API-sleutel toe als vereist
+            'Authorization': `Bearer ${currentApiKey}`, // Voeg API-sleutel toe als vereist
+            'serverId': getServerId() // Voeg serverId toe als header
         },
-        body: JSON.stringify({ status: 'accepted' })
+        body: JSON.stringify({ status: 'accepted', 
+        serverId: getServerId() 
+      })
     })
     .then(res => {
         console.log(`🌐 PATCH response status: ${res.status}`);
@@ -1329,7 +1332,8 @@ const call = calls.find(c => String(c.id) === String(callId));
         showNotification('Fout bij backend-update, lokaal geaccepteerd', 'error');
     });
 }
-    function updateCallList() {
+    
+function updateCallList() {
     const callListContainer = document.getElementById('callListContainer');
     callListContainer.innerHTML = ''; // Maak de container leeg
 
@@ -1346,7 +1350,11 @@ const call = calls.find(c => String(c.id) === String(callId));
     });
 }
 
-    function updateRecentCalls() {
+function getServerId() {
+    return localStorage.getItem('serverId') || 'fallback-server-id';
+}
+   
+function updateRecentCalls() {
     const recentCallsContainer = document.getElementById('recentCallsContainer');
     recentCallsContainer.innerHTML = ''; // Maak de container leeg
 
