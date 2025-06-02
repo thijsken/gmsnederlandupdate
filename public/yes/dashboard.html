@@ -581,6 +581,8 @@ fetch('/api/luchtalarm/palen')
     zoomSnap: 0.1
 }).setView([0, 0], 0);
 
+localStorage.setItem('serverId', serverId);
+
         // Markers and data
         let emergencyMarkers = {};
         let unitMarkers = {};
