@@ -201,18 +201,6 @@ fetch('/api/luchtalarm/palen')
                     <div class="max-w-3xl mx-auto">
                         <h2 class="text-2xl font-bold mb-6">Instellingen</h2>
 
-                        <div>
-                            <label for="serverId" class="block text-sm font-medium text-gray-700 mb-1">Server ID</label>
-                            <div class="relative">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <i class="fas fa-server text-gray-400"></i>
-                                </div>
-                                <input type="text" id="serverId" name="serverId" 
-                                    class="input-field pl-10 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-3 border" 
-                                    placeholder="Voer uw Server ID in" required>
-                            </div>
-                        </div>
-
                         <div class="bg-gray-800 rounded-lg p-6 mb-6">
                             <h3 class="text-xl font-semibold mb-4">Custom Kaart Upload (.png)</h3>
                             <input type="file" id="mapImageInput" accept="image/png" class="mb-4 text-sm text-gray-300">
@@ -561,10 +549,10 @@ fetch('/api/luchtalarm/palen')
         // API Configuration
         // https://gmsnederland-production.up.railway.app
         const API_URL = 'https://gmsnederland-production.up.railway.app';
-        fetch('https://gmsnederland-production.up.railway.app/api/meldingen?serverId=testserver123')
+        const serverId = "gms_main"; // of haal dit dynamisch op
+        fetch(`${API_URL}/api/meldingen?serverId=${serverId}`)
         const API_BASE_URL = 'gmsnederland-production.up.railway.app'; // Wijzig dit naar je backend URL
         const API_KEY = 'gms_s9l5z0k2hz8kvd5ccoxus'; // vervang dit met de juiste sleutel
-        const serverId = getServerId() || 'testServer1';
         let currentCallId = null;
         let currentApiKey = localStorage.getItem('apiKey') || '';
         
@@ -581,8 +569,6 @@ fetch('/api/luchtalarm/palen')
     maxZoom: 5,
     zoomSnap: 0.1
 }).setView([0, 0], 0);
-
-localStorage.setItem('serverId', serverId);
 
         // Markers and data
         let emergencyMarkers = {};
@@ -1310,14 +1296,14 @@ const call = calls.find(c => String(c.id) === String(callId));
     }
 
     // 🌐 PATCH naar backend
-fetch(`${API_URL}/api/meldingen/${callId}/status?serverId=${encodeURIComponent(getServerId())}`, {
-    method: 'PATCH',
-    headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${currentApiKey}`
-    },
-    body: JSON.stringify({ status: 'accepted' })
-})
+    fetch(`${API_URL}/api/meldingen/${callId}/status`, {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${currentApiKey}` // Voeg API-sleutel toe als vereist
+        },
+        body: JSON.stringify({ status: 'accepted' })
+    })
     .then(res => {
         console.log(`🌐 PATCH response status: ${res.status}`);
         if (!res.ok) throw new Error("PATCH mislukt");
@@ -1332,8 +1318,7 @@ fetch(`${API_URL}/api/meldingen/${callId}/status?serverId=${encodeURIComponent(g
         showNotification('Fout bij backend-update, lokaal geaccepteerd', 'error');
     });
 }
-    
-function updateCallList() {
+    function updateCallList() {
     const callListContainer = document.getElementById('callListContainer');
     callListContainer.innerHTML = ''; // Maak de container leeg
 
@@ -1350,11 +1335,7 @@ function updateCallList() {
     });
 }
 
-function getServerId() {
-    return localStorage.getItem('serverId');
-}
-   
-function updateRecentCalls() {
+    function updateRecentCalls() {
     const recentCallsContainer = document.getElementById('recentCallsContainer');
     recentCallsContainer.innerHTML = ''; // Maak de container leeg
 
@@ -1605,13 +1586,7 @@ let vorigeMeldingenTimestamps = [];
 let bekendeMeldingen = new Set();
 
 function fetchEmergencyReports() {
-      const serverId = getServerId();  // zorg dat dit een string teruggeeft
-  if (!serverId) {
-    console.error('Geen serverId gevonden, kan meldingen niet ophalen.');
-    return;
-  }
-
-    fetch(`${API_URL}/api/meldingen?serverId=${encodeURIComponent(serverId)}`)
+    fetch(`${API_URL}/api/meldingen`)
         .then(res => {
             if (!res.ok) {
                 return res.json().then(errData => {
@@ -1831,6 +1806,8 @@ function clearCalls() {
     callList.innerHTML = '';
 }
 
+
+
 // Functie om noodmeldingen weer te geven op de kaart
 function displayEmergencyReports(reports) {
     // Verwijder oude markers
@@ -1905,6 +1882,7 @@ function zoomToCall(callId) {
     mainMap.setView([call.coordinates.y, call.coordinates.x], 17); // Zoom in op locatie
     emergencyMarkers[call.id].openPopup(); // Open popup op de marker
 }
+
 
 document.addEventListener('DOMContentLoaded', function() {
     // Selecteer de 'Meer info' knoppen
@@ -2019,13 +1997,13 @@ function meerInfo(callId) {
 }
 
 // Functie om een melding toe te voegen aan recentCalls
-function addNewCall(call) {
+        function addNewCall(call) {
     console.log("Nieuwe melding toegevoegd:", call);
     recentCalls.push(call);
     console.log("recentCalls na toevoegen:", recentCalls);
 }
 
-function renderAcceptedCalls() {
+        function renderAcceptedCalls() {
     const container = document.getElementById('acceptedCallsList');
     if (!container) return;
     container.innerHTML = '';

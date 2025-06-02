@@ -1,5 +1,5 @@
 const admin = require('firebase-admin');
-const serviceAccount = require('./confige/gmsnederland-3029e-firebase-adminsdk-fbsvc-7937dbb046.json'); // pas aan naar jouw bestand
+const serviceAccount = require('./public/serviceAccountKey.json'); // pas aan naar jouw bestand
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
@@ -18,7 +18,7 @@ const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, './public')));
+app.use(express.static(path.join(__dirname, 'public')));
 
 // 🧠 Tijdelijke opslag
 let meldingen = [];
@@ -33,21 +33,8 @@ let lastPostAlarm = null;
 
 // 🌍 Dashboard root
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, './public/yes', 'dashboard.html'));
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
-
-// 👇 Voeg dit toe boven je routes
-function requireServerId(req, res, next) {
-  console.log('Incoming serverId query:', req.query.serverId);
-  console.log('Incoming serverId body:', req.body.serverId);
-
-  const serverId = req.query.serverId || req.body.serverId;
-  if (!serverId) {
-    return res.status(400).json({ message: 'serverId is verplicht' });
-  }
-  req.serverId = serverId;
-  next();
-}
 
 // 📥 POST: Melding ontvangen
 app.post('/api/meldingen', (req, res) => {
@@ -78,14 +65,19 @@ app.post('/api/meldingen', (req, res) => {
     });
 });
 
+
 // 📤 GET: Alle meldingen ophalen
-app.get('/api/meldingen', requireServerId, (req, res) => {
-  const { serverId } = req;
+app.get('/api/meldingen', (req, res) => {
+  const serverId = req.query.serverId;
+  if (!serverId) {
+    return res.status(400).json({ message: 'serverId is verplicht' });
+  }
 
   const ref = db.ref(`servers/${serverId}/meldingen`);
   ref.once('value')
     .then(snapshot => {
       const data = snapshot.val() || {};
+      // Omdat data een object is van keys => values, kun je het omzetten naar array:
       const meldingen = Object.values(data);
       res.json(meldingen);
     })
@@ -95,26 +87,22 @@ app.get('/api/meldingen', requireServerId, (req, res) => {
     });
 });
 
-app.patch('/api/meldingen/:meldingId/status', requireServerId, async (req, res) => {
+app.patch('/api/meldingen/:meldingId/status', async (req, res) => {
   const { meldingId } = req.params;
   const { status } = req.body;
-  const { serverId } = req;
 
   if (!["new", "accepted", "assigned", "closed"].includes(status)) {
     return res.status(400).json({ message: 'Ongeldige status' });
   }
 
   try {
-    const ref = db.ref(`servers/${serverId}/meldingen/${meldingId}`);
+    const ref = db.ref(`servers/${req.query.serverId}/meldingen/${meldingId}`);
     const snapshot = await ref.once('value');
-
     if (!snapshot.exists()) {
       return res.status(404).json({ message: 'Melding niet gevonden' });
     }
-
     await ref.update({ status });
     const updated = await ref.once('value');
-
     res.json({ message: 'Status bijgewerkt', melding: updated.val() });
   } catch (error) {
     console.error('Fout bij updaten status melding:', error);
@@ -123,12 +111,11 @@ app.patch('/api/meldingen/:meldingId/status', requireServerId, async (req, res) 
 });
 
 // ✅ POST: Eenheid aanmaken of bijwerken
-app.post('/api/units', requireServerId, (req, res) => {
-  const { id, type, location } = req.body;
-  const { serverId } = req;
+app.post('/api/units', (req, res) => {
+  const { serverId, id, type, location } = req.body;
 
-  if (!id || !type || !location) {
-    return res.status(400).json({ message: 'Ongeldige eenheid' });
+  if (!serverId || !id || !type || !location) {
+    return res.status(400).json({ message: 'Ongeldige eenheid of geen serverId' });
   }
 
   const ref = db.ref(`servers/${serverId}/units/${id}`);
@@ -145,19 +132,9 @@ app.post('/api/units', requireServerId, (req, res) => {
 });
 
 // ✅ GET: Alle eenheden ophalen
-app.get('/api/units', requireServerId, async (req, res) => {
-  const { serverId } = req;
-
-  try {
-    const snapshot = await db.ref(`servers/${serverId}/units`).once('value');
-    const data = snapshot.val() || {};
-    res.json(Object.values(data));
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Fout bij ophalen units' });
-  }
+app.get('/api/units', (req, res) => {
+  res.json(eenheden);
 });
-
 
 // ✅ POST: Luchtalarm-palen ontvangen vanuit Roblox
 app.post('/api/luchtalarm/palen', (req, res) => {
