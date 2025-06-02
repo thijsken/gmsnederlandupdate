@@ -1605,7 +1605,13 @@ let vorigeMeldingenTimestamps = [];
 let bekendeMeldingen = new Set();
 
 function fetchEmergencyReports() {
-    fetch(`${API_URL}/api/meldingen`)
+      const serverId = getServerId();  // zorg dat dit een string teruggeeft
+  if (!serverId) {
+    console.error('Geen serverId gevonden, kan meldingen niet ophalen.');
+    return;
+  }
+
+    fetch(`${API_URL}/api/meldingen?serverId=${encodeURIComponent(serverId)}`)
         .then(res => {
             if (!res.ok) {
                 return res.json().then(errData => {
