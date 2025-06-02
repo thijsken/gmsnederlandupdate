@@ -1,5 +1,5 @@
 node_modules
 config/serviceAccountKey.json
-config/gmsnederland-3029e-firebase-adminsdk-fbsvc-9869ab8a98.json
-echo config/serviceAccountKey.json >> .gitignore
+config/gmsnederland-3029e-firebase-adminsdk-fbsvc-7937dbb046.json
+echo public/serviceAccountKey.json >> .gitignore
 
