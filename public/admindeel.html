@@ -295,10 +295,11 @@ db.ref('servers').on('value', snapshot => {
                 </div>
             </td>
             <td class="px-4 py-2 border">${data.pakket}</td>
-            <td class="px-4 py-2 border">${data.datum}</td>
-            <td class="px-4 py-2 border">${data.status} </td>
+            <td class="px-4 py-2 border whitespace-nowrap">${data.datum}</td>
             <td class="px-4 py-2 border">${createStatusBadge(data.status || 'actief')}
-                <button onclick="deleteServer('${child.key}')" class="text-red-600 hover:text-red-800"><i class="fas fa-trash"></i></button>
+            <td class="px-4 py-2 border">
+              <button onclick="editServer('${child.key}')" class="text-blue-600 hover:text-blue-800"><i class="fas fa-edit"></i></button>
+              <button onclick="deleteServer('${child.key}')" class="text-red-600 hover:text-red-800"><i class="fas fa-trash"></i></button>
             </td>
         `;
         serverList.appendChild(row);
