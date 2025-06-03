@@ -1,572 +1,284 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GMS Nederland - Admin Dashboard</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: #f0f4f8;
-        }
-        .sidebar {
-            background: linear-gradient(180deg, #1a56db 0%, #0d3e8f 100%);
-            transition: all 0.3s ease;
-        }
-        .dashboard-card {
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-            transition: transform 0.3s, box-shadow 0.3s;
-        }
-        .dashboard-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-        }
-        .btn-primary {
-            background: linear-gradient(to right, #1a56db, #0d3e8f);
-        }
-        .btn-primary:hover {
-            background: linear-gradient(to right, #0d3e8f, #1a56db);
-        }
-        .server-status-active {
-            background-color: rgba(16, 185, 129, 0.1);
-            color: #10b981;
-        }
-        .server-status-suspended {
-            background-color: rgba(245, 158, 11, 0.1);
-            color: #f59e0b;
-        }
-        .server-status-inactive {
-            background-color: rgba(239, 68, 68, 0.1);
-            color: #ef4444;
-        }
-        .animate-pulse {
-            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-        }
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-    </style>
-    <script>
-        // Initialize Firebase (You'll need to replace with your actual Firebase config)
-        const firebaseConfig = {
-        apiKey: "AIzaSyAuHf66GFU9KKFVkJPAS3a1qaX2nG9xH_s",
-        authDomain: "gmsnederland-3029e.firebaseapp.com",
-        databaseURL: "https://gmsnederland-3029e-default-rtdb.europe-west1.firebasedatabase.app",
-        projectId: "gmsnederland-3029e",
-        storageBucket: "gmsnederland-3029e.appspot.com",
-        messagingSenderId: "430593041740",
-        appId: "1:430593041740:web:31c2c486b9907d6ae9b9b4"
-        };
-
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
-        
-        // Firestore (if using) would be similar but database references would change
-    </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GMS Nederland - Admin Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Poppins', sans-serif; background-color: #f0f4f8; }
+    .btn-primary { background: linear-gradient(to right, #1a56db, #0d3e8f); }
+    .btn-primary:hover { background: linear-gradient(to right, #0d3e8f, #1a56db); }
+  </style>
 </head>
 <body class="bg-gray-50 min-h-screen">
-    <!-- Login Screen -->
-    <div id="loginScreen" class="fixed inset-0 bg-blue-900 flex items-center justify-center z-50">
-        <div class="w-full max-w-md bg-white rounded-xl shadow-lg p-8 space-y-6">
-            <div class="text-center mb-6">
-                <div class="flex justify-center">
-                    <div class="bg-gray-200 border-2 border-dashed rounded-xl w-16 h-16 flex items-center justify-center mb-3">
-                        <i class="fas fa-server text-blue-600 text-3xl"></i>
-                    </div>
-                </div>
-                <h1 class="text-3xl font-bold text-gray-800">GMS Nederland</h1>
-                <p class="text-gray-500 mt-1">Admin Dashboard</p>
+  <div id="loginScreen" class="fixed inset-0 bg-blue-900 flex items-center justify-center z-50">
+    <div class="w-full max-w-md bg-white rounded-xl shadow-lg p-8 space-y-6">
+      <h1 class="text-3xl font-bold text-center">GMS Nederland</h1>
+      <form id="loginForm" class="space-y-4">
+        <input id="email" type="email" placeholder="E-mailadres" required class="w-full px-4 py-2 border border-gray-300 rounded-lg" />
+        <input id="password" type="password" placeholder="Wachtwoord" required class="w-full px-4 py-2 border border-gray-300 rounded-lg" />
+        <button type="submit" class="w-full btn-primary py-2 px-4 text-white font-medium rounded-lg">Inloggen</button>
+      </form>
+      <div id="loginError" class="text-red-500 text-center hidden">Fout bij inloggen</div>
+    </div>
+  </div>
+
+
+  <!-- Main Dashboard -->
+  <div id="dashboard" class="min-h-screen hidden">
+    <div class="flex h-screen">
+      <!-- Sidebar -->
+      <aside class="w-64 bg-blue-900 text-white flex flex-col">
+        <div class="p-6 flex items-center space-x-3 border-b border-blue-700">
+          <img src="logogmsnederland.png" class="w-10 h-10" alt="Logo" />
+          <div>
+            <h2 class="text-xl font-bold">GMS Nederland</h2>
+            <span class="text-xs">Admin Panel</span>
+          </div>
+        </div>
+        <nav class="flex-1 p-4 space-y-2">
+          <a href="#" class="flex items-center px-3 py-2 rounded-lg bg-blue-700"><i class="fas fa-tachometer-alt mr-3"></i> Dashboard</a>
+          <a href="support.html" class="flex items-center px-3 py-2 hover:bg-blue-800 rounded-lg"><i class="fas fa-server mr-3"></i> SupportChat</a>
+        </nav>
+        <div class="p-4 border-t border-blue-700">
+          <button id="logoutBtn" class="w-full bg-red-500 hover:bg-red-600 text-white py-2 rounded-lg text-sm font-semibold"><i class="fas fa-sign-out-alt mr-2"></i> Uitloggen</button>
+        </div>
+      </aside>
+
+      <!-- Main Content -->
+      <main class="flex-1 p-8 overflow-y-auto">
+        <h1 class="text-2xl font-bold mb-6">Overzicht</h1>
+
+                <!-- Statistiek Kaarten -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white p-6 rounded-lg shadow flex items-center space-x-4">
+            <div class="bg-blue-100 p-3 rounded-full">
+                <i class="fas fa-server text-blue-600"></i>
             </div>
-            
-            <form id="loginForm" class="space-y-4">
-                <div>
-                    <label for="email" class="block text-sm font-medium text-gray-700 mb-1">E-mailadres</label>
-                    <input type="email" id="email" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="admin@example.com" required>
-                </div>
-                
-                <div>
-                    <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Wachtwoord</label>
-                    <input type="password" id="password" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="••••••••" required>
-                </div>
-                
-                <button type="submit" class="w-full btn-primary py-2 px-4 text-white font-medium rounded-lg flex items-center justify-center space-x-2">
-                    <i class="fas fa-sign-in-alt"></i>
-                    <span>Inloggen</span>
-                </button>
-            </form>
-            
-            <div id="loginError" class="text-red-500 text-center py-2 hidden">
-                <i class="fas fa-exclamation-circle mr-2"></i>
-                <span>Ongeldige inloggegevens</span>
+            <div>
+                <p class="text-gray-600">Actieve servers</p>
+                <p class="text-2xl font-bold"><span id="aantalActieveServers">0</span></p>
+            </div>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow flex items-center space-x-4">
+            <div class="bg-green-100 p-3 rounded-full">
+                <i class="fas fa-users text-green-600"></i>
+            </div>
+            <div>
+                <p class="text-gray-600">Actieve gebruikers</p>
+                <p class="text-2xl font-bold">79</p>
+            </div>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow flex items-center space-x-4">
+            <div class="bg-yellow-100 p-3 rounded-full">
+                <i class="fas fa-exclamation-triangle text-yellow-600"></i>
+            </div>
+            <div>
+                <p class="text-gray-600">Onderhoud</p>
+                <p class="text-2xl font-bold">3</p>
+            </div>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow flex items-center space-x-4">
+            <div class="bg-red-100 p-3 rounded-full">
+                <i class="fas fa-ban text-red-600"></i>
+            </div>
+            <div>
+                <p class="text-gray-600">Uitgeschakeld</p>
+                <p class="text-2xl font-bold">2</p>
+            </div>
             </div>
         </div>
-    </div>
 
-    <!-- Main Dashboard -->
-    <div id="dashboard" class="hidden">
-        <div class="flex min-h-screen">
-            <!-- Sidebar -->
-            <div class="sidebar w-64 min-h-screen text-white">
-                <div class="p-4 flex items-center space-x-3 border-b border-blue-400">
-                    <div class="bg-blue-500 rounded-xl p-2">
-                        <i class="fas fa-server text-white text-xl"></i>
-                    </div>
-                    <div>
-                        <h2 class="text-xl font-bold">GMS Nederland</h2>
-                        <p class="text-xs opacity-75">Admin Dashboard</p>
-                    </div>
-                </div>
-                
-                <nav class="mt-5 px-2 space-y-1">
-                    <a href="#" class="flex items-center px-4 py-3 bg-blue-700 text-white rounded-xl mx-2">
-                        <i class="fas fa-tachometer-alt mr-3"></i>
-                        Dashboard
-                    </a>
-                    <a href="#" class="flex items-center px-4 py-3 text-blue-100 hover:bg-blue-700 rounded-xl mx-2">
-                        <i class="fas fa-server mr-3"></i>
-                        Servers Beheren
-                    </a>
-                    <a href="#" class="flex items-center px-4 py-3 text-blue-100 hover:bg-blue-700 rounded-xl mx-2">
-                        <i class="fas fa-users mr-3"></i>
-                        Gebruikers
-                    </a>
-                    <a href="#" class="flex items-center px-4 py-3 text-blue-100 hover:bg-blue-700 rounded-xl mx-2">
-                        <i class="fas fa-chart-bar mr-3"></i>
-                        Statestieken
-                    </a>
-                    <a href="#" class="flex items-center px-4 py-3 text-blue-100 hover:bg-blue-700 rounded-xl mx-2">
-                        <i class="fas fa-cog mr-3"></i>
-                        Instellingen
-                    </a>
-                </nav>
-                
-                <div class="absolute bottom-0 w-64 p-4 border-t border-blue-400">
-                    <div class="flex items-center space-x-3">
-                        <div class="relative">
-                            <img class="w-10 h-10 rounded-full" src="https://ui-avatars.com/api/?name=Admin+User&background=0D8ABC&color=fff" alt="Admin">
-                            <span class="top-0 left-7 absolute w-3 h-3 bg-green-500 border-2 border-white rounded-full"></span>
-                        </div>
-                        <div>
-                            <p class="font-medium">Admin Gebruiker</p>
-                            <button id="logoutBtn" class="text-xs text-blue-200 hover:text-white">Uitloggen</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Main Content -->
-            <div class="flex-1">
-                <!-- Top bar -->
-                <header class="bg-white shadow-sm">
-                    <div class="flex justify-between items-center px-6 py-4">
-                        <div class="flex items-center">
-                            <h1 class="text-xl font-semibold text-gray-800">Dashboard</h1>
-                        </div>
-                        <div class="flex items-center space-x-4">
-                            <div class="relative">
-                                <button class="text-gray-500 hover:text-gray-700">
-                                    <i class="fas fa-bell text-xl"></i>
-                                </button>
-                                <span class="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500"></span>
-                            </div>
-                            <div>
-                                <button class="text-gray-500 hover:text-gray-700">
-                                    <i class="fas fa-cog text-xl"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </header>
-                
-                <!-- Dashboard Content -->
-                <main class="p-6">
-                    <!-- Stats Cards -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-                        <div class="dashboard-card bg-white rounded-xl p-5">
-                            <div class="flex items-center">
-                                <div class="p-3 rounded-full bg-blue-100 mr-4">
-                                    <i class="fas fa-server text-blue-600 text-2xl"></i>
-                                </div>
-                                <div>
-                                    <p class="text-gray-500">Actieve servers</p>
-                                    <h3 class="text-2xl font-bold">84</h3>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="dashboard-card bg-white rounded-xl p-5">
-                            <div class="flex items-center">
-                                <div class="p-3 rounded-full bg-green-100 mr-4">
-                                    <i class="fas fa-users text-green-600 text-2xl"></i>
-                                </div>
-                                <div>
-                                    <p class="text-gray-500">Actieve gebruikers</p>
-                                    <h3 class="text-2xl font-bold">79</h3>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="dashboard-card bg-white rounded-xl p-5">
-                            <div class="flex items-center">
-                                <div class="p-3 rounded-full bg-yellow-100 mr-4">
-                                    <i class="fas fa-exclamation-triangle text-yellow-600 text-2xl"></i>
-                                </div>
-                                <div>
-                                    <p class="text-gray-500">Onderhoud</p>
-                                    <h3 class="text-2xl font-bold">3</h3>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="dashboard-card bg-white rounded-xl p-5">
-                            <div class="flex items-center">
-                                <div class="p-3 rounded-full bg-red-100 mr-4">
-                                    <i class="fas fa-ban text-red-600 text-2xl"></i>
-                                </div>
-                                <div>
-                                    <p class="text-gray-500">Uitgeschakeld</p>
-                                    <h3 class="text-2xl font-bold">2</h3>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <!-- Server Creation Form -->
-                        <div class="bg-white rounded-xl shadow p-6 lg:col-span-1">
-                            <h2 class="text-lg font-semibold mb-4">Server Aanmaken</h2>
-                            <form id="serverForm">
-                                <div class="space-y-4">
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">Gebruikersnaam</label>
-                                        <input type="text" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Voer gebruikersnaam in" required>
-                                    </div>
-                                    
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">Servernaam</label>
-                                        <input type="text" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Voer servernaam in" required>
-                                    </div>
-                                    
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">Pakkettype</label>
-                                        <select class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
-                                            <option value="">Selecteer pakket</option>
-                                            <option value="basic">Basis</option>
-                                            <option value="pro">Professioneel</option>
-                                            <option value="enterprise">Enterprise</option>
-                                            <option value="custom">Aangepast</option>
-                                        </select>
-                                    </div>
-                                    
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">Startdatum</label>
-                                        <input type="date" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" required>
-                                    </div>
-                                    
-                                    <div class="pt-2">
-                                        <button type="submit" class="w-full btn-primary py-2 px-4 text-white font-medium rounded-lg flex items-center justify-center space-x-2">
-                                            <i class="fas fa-plus mr-2"></i>
-                                            <span>Server Aanmaken</span>
-                                        </button>
-                                    </div>
-                                </div>
-                            </form>
-                        </div>
-                        
-                        <!-- Server List -->
-                        <div class="bg-white rounded-xl shadow p-6 lg:col-span-2">
-                            <div class="flex justify-between items-center mb-6">
-                                <h2 class="text-lg font-semibold">Bestaande Servers</h2>
-                                <div class="relative">
-                                    <input type="text" placeholder="Zoek servers..." class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
-                                    <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
-                                </div>
-                            </div>
-                            
-                            <div class="overflow-x-auto">
-                                <table class="w-full">
-                                    <thead>
-                                        <tr class="text-left text-sm text-gray-500 border-b">
-                                            <th class="py-3 px-4">Server</th>
-                                            <th class="py-3 px-4">Gebruiker</th>
-                                            <th class="py-3 px-4">Pakket</th>
-                                            <th class="py-3 px-4">Startdatum</th>
-                                            <th class="py-3 px-4">Status</th>
-                                            <th class="py-3 px-4 text-right">Acties</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <!-- Active Server -->
-                                        <tr class="border-b hover:bg-gray-50">
-                                            <td class="py-4 px-4 font-medium">
-                                                <div class="flex items-center">
-                                                    <div class="bg-green-100 w-3 h-3 rounded-full mr-3"></div>
-                                                    <div>
-                                                        <p>srv-01-prod</p>
-                                                        <p class="text-xs text-gray-500">IP: 192.168.1.10</p>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td class="py-4 px-4">
-                                                <div class="flex items-center">
-                                                    <img src="https://ui-avatars.com/api/?name=John+Doe" alt="John Doe" class="w-6 h-6 rounded-full mr-2">
-                                                    <span>John Doe</span>
-                                                </div>
-                                            </td>
-                                            <td class="py-4 px-4">
-                                                <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">Professioneel</span>
-                                            </td>
-                                            <td class="py-4 px-4 text-sm">12-03-2023</td>
-                                            <td class="py-4 px-4">
-                                                <span class="server-status-active px-3 py-1 rounded-full text-xs font-medium">Actief</span>
-                                            </td>
-                                            <td class="py-4 px-4 text-right">
-                                                <div class="flex space-x-1 justify-end">
-                                                    <button class="text-blue-600 hover:text-blue-800 p-2">
-                                                        <i class="fas fa-edit"></i>
-                                                    </button>
-                                                    <button class="text-red-600 hover:text-red-800 p-2">
-                                                        <i class="fas fa-trash"></i>
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        
-                                        <!-- Suspended Server -->
-                                        <tr class="border-b hover:bg-gray-50">
-                                            <td class="py-4 px-4 font-medium">
-                                                <div class="flex items-center">
-                                                    <div class="bg-yellow-100 w-3 h-3 rounded-full mr-3"></div>
-                                                    <div>
-                                                        <p>srv-03-dev</p>
-                                                        <p class="text-xs text-gray-500">IP: 192.168.1.30</p>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td class="py-4 px-4">
-                                                <div class="flex items-center">
-                                                    <img src="https://ui-avatars.com/api/?name=Lisa+Smith" alt="Lisa Smith" class="w-6 h-6 rounded-full mr-2">
-                                                    <span>Lisa Smith</span>
-                                                </div>
-                                            </td>
-                                            <td class="py-4 px-4">
-                                                <span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs">Basis</span>
-                                            </td>
-                                            <td class="py-4 px-4 text-sm">15-05-2023</td>
-                                            <td class="py-4 px-4">
-                                                <span class="server-status-suspended px-3 py-1 rounded-full text-xs font-medium">Gesuspendeerd</span>
-                                            </td>
-                                            <td class="py-4 px-4 text-right">
-                                                <div class="flex space-x-1 justify-end">
-                                                    <button class="text-blue-600 hover:text-blue-800 p-2">
-                                                        <i class="fas fa-edit"></i>
-                                                    </button>
-                                                    <button class="text-red-600 hover:text-red-800 p-2">
-                                                        <i class="fas fa-trash"></i>
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        
-                                        <!-- Inactive Server -->
-                                        <tr class="border-b hover:bg-gray-50">
-                                            <td class="py-4 px-4 font-medium">
-                                                <div class="flex items-center">
-                                                    <div class="bg-red-100 w-3 h-3 rounded-full mr-3"></div>
-                                                    <div>
-                                                        <p>srv-05-db</p>
-                                                        <p class="text-xs text-gray-500">IP: 192.168.1.50</p>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td class="py-4 px-4">
-                                                <div class="flex items-center">
-                                                    <img src="https://ui-avatars.com/api/?name=Mark+Johnson" alt="Mark Johnson" class="w-6 h-6 rounded-full mr-2">
-                                                    <span>Mark Johnson</span>
-                                                </div>
-                                            </td>
-                                            <td class="py-4 px-4">
-                                                <span class="px-2 py-1 bg-purple-100 text-purple-800 rounded-full text-xs">Aangepast</span>
-                                            </td>
-                                            <td class="py-4 px-4 text-sm">22-01-2023</td>
-                                            <td class="py-4 px-4">
-                                                <span class="server-status-inactive px-3 py-1 rounded-full text-xs font-medium">Inactief</span>
-                                            </td>
-                                            <td class="py-4 px-4 text-right">
-                                                <div class="flex space-x-1 justify-end">
-                                                    <button class="text-blue-600 hover:text-blue-800 p-2">
-                                                        <i class="fas fa-edit"></i>
-                                                    </button>
-                                                    <button class="text-red-600 hover:text-red-800 p-2">
-                                                        <i class="fas fa-trash"></i>
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        
-                                        <!-- Active Server -->
-                                        <tr class="border-b hover:bg-gray-50">
-                                            <td class="py-4 px-4 font-medium">
-                                                <div class="flex items-center">
-                                                    <div class="bg-green-100 w-3 h-3 rounded-full mr-3"></div>
-                                                    <div>
-                                                        <p>srv-07-web</p>
-                                                        <p class="text-xs text-gray-500">IP: 192.168.1.70</p>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td class="py-4 px-4">
-                                                <div class="flex items-center">
-                                                    <img src="https://ui-avatars.com/api/?name=Sara+Vries" alt="Sara de Vries" class="w-6 h-6 rounded-full mr-2">
-                                                    <span>Sara de Vries</span>
-                                                </div>
-                                            </td>
-                                            <td class="py-4 px-4">
-                                                <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">Enterprise</span>
-                                            </td>
-                                            <td class="py-4 px-4 text-sm">08-04-2023</td>
-                                            <td class="py-4 px-4">
-                                                <span class="server-status-active px-3 py-1 rounded-full text-xs font-medium">Actief</span>
-                                            </td>
-                                            <td class="py-4 px-4 text-right">
-                                                <div class="flex space-x-1 justify-end">
-                                                    <button class="text-blue-600 hover:text-blue-800 p-2">
-                                                        <i class="fas fa-edit"></i>
-                                                    </button>
-                                                    <button class="text-red-600 hover:text-red-800 p-2">
-                                                        <i class="fas fa-trash"></i>
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                            
-                            <div class="flex items-center justify-between border-t border-gray-200 pt-4">
-                                <div class="text-sm text-gray-500">
-                                    1 tot 4 van 84 servers
-                                </div>
-                                <div class="flex space-x-2">
-                                    <button class="px-3 py-1 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-50">
-                                        Vorige
-                                    </button>
-                                    <button class="px-3 py-1 rounded-lg border border-blue-600 bg-blue-600 text-white">
-                                        1
-                                    </button>
-                                    <button class="px-3 py-1 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-50">
-                                        2
-                                    </button>
-                                    <button class="px-3 py-1 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-50">
-                                        3
-                                    </button>
-                                    <button class="px-3 py-1 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-50">
-                                        Volgende
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </main>
-            </div>
+
+  <!-- Grid layout met server aanmaken links en lijst rechts -->
+  <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
+    <!-- Server Aanmaken -->
+    <section class="bg-white p-6 rounded-xl shadow">
+      <h2 class="text-xl font-semibold mb-4">Server Aanmaken</h2>
+      <form id="serverForm" class="space-y-4">
+        <div>
+          <label class="block mb-1 text-sm">Gebruikersnaam</label>
+          <input id="gebruiker" type="text" placeholder="Voer gebruikersnaam in" required class="w-full px-4 py-2 border border-gray-300 rounded-lg" />
         </div>
-    </div>
+        <div>
+          <label class="block mb-1 text-sm">Servernaam</label>
+          <input id="servernaam" type="text" placeholder="Voer servernaam in" required class="w-full px-4 py-2 border border-gray-300 rounded-lg" />
+        </div>
+        <div>
+          <label class="block mb-1 text-sm">Pakkettype</label>
+          <select id="pakket" required class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+            <option value="">Selecteer pakket</option>
+            <option value="basic">Basis</option>
+            <option value="pro">Professioneel</option>
+            <option value="enterprise">Enterprise</option>
+            <option value="custom">Aangepast</option>
+          </select>
+        </div>
+        <div>
+          <label class="block mb-1 text-sm">Startdatum</label>
+          <input id="datum" type="date" required class="w-full px-4 py-2 border border-gray-300 rounded-lg" />
+        </div>
+        <div class="text-right">
+          <button type="submit" class="btn-primary px-6 py-2 text-white rounded-lg">Server Aanmaken</button>
+        </div>
+      </form>
+    </section>
 
-<script>
-document.addEventListener('DOMContentLoaded', () => {
+    <!-- Serverlijst -->
+    <section class="bg-white p-6 rounded-xl shadow">
+      <h2 class="text-xl font-semibold mb-4">Bestaande Servers</h2>
+      <div class="relative mb-4">
+        <input type="text" placeholder="Zoek servers..." class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg w-full" />
+        <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+      </div>
+      <div class="space-y-4" id="serverList">
+        <!-- Dynamische inhoud via JavaScript -->
+      </div>
+    </section>
+  </div>
+</main>
 
-    // Inloggen
-    const loginForm = document.getElementById('loginForm');
-    const loginError = document.getElementById('loginError');
-    const loginScreen = document.getElementById('loginScreen');
-    const dashboard = document.getElementById('dashboard');
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAuHf66GFU9KKFVkJPAS3a1qaX2nG9xH_s",
+      authDomain: "gmsnederland-3029e.firebaseapp.com",
+      projectId: "gmsnederland-3029e",
+      databaseURL: "https://gmsnederland-3029e-default-rtdb.europe-west1.firebasedatabase.app"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.database();
 
-    loginForm.addEventListener('submit', function (e) {
-        e.preventDefault();
-
-        const email = document.getElementById('email').value.trim();
-        const password = document.getElementById('password').value.trim();
-        const loginBtn = this.querySelector('button[type="submit"]');
-        const originalBtnHTML = loginBtn.innerHTML;
-
-        if (email && password) {
-            loginBtn.innerHTML = '<i class="fas fa-spinner animate-spin"></i> <span>Bezig met inloggen...</span>';
-            loginBtn.disabled = true;
-
-            setTimeout(() => {
-                loginScreen.classList.add('hidden');
-                dashboard.classList.remove('hidden');
-
-                loginBtn.innerHTML = originalBtnHTML;
-                loginBtn.disabled = false;
-                loginForm.reset();
-            }, 1500);
-        } else {
-            loginError.classList.remove('hidden');
-            setTimeout(() => loginError.classList.add('hidden'), 3000);
-        }
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      try {
+        await auth.signInWithEmailAndPassword(email, password);
+        document.getElementById('loginScreen').classList.add('hidden');
+        document.getElementById('dashboard').classList.remove('hidden');
+        loadServers();
+        telActieveServers();
+      } catch (err) {
+        document.getElementById('loginError').classList.remove('hidden');
+      }
     });
 
-    // Uitloggen
-    document.getElementById('logoutBtn').addEventListener('click', () => {
-        dashboard.classList.add('hidden');
-        loginScreen.classList.remove('hidden');
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+      await auth.signOut();
+      document.getElementById('dashboard').classList.add('hidden');
+      document.getElementById('loginScreen').classList.remove('hidden');
     });
 
-    // Server aanmaken
-    const serverForm = document.getElementById('serverForm');
-    serverForm.addEventListener('submit', function (e) {
-        e.preventDefault();
+    document.getElementById('serverForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
 
-        const submitBtn = this.querySelector('button[type="submit"]');
-        const originalBtnHTML = submitBtn.innerHTML;
+    const gebruiker = document.getElementById('gebruiker').value;
 
-        submitBtn.innerHTML = '<i class="fas fa-spinner animate-spin"></i> <span>Server wordt aangemaakt...</span>';
-        submitBtn.disabled = true;
+    const server = {
+        gebruiker: gebruiker,
+        servernaam: document.getElementById('servernaam').value,
+        pakket: document.getElementById('pakket').value,
+        datum: document.getElementById('datum').value,
+        status: 'actief',
+        adminServer: gebruiker,
+        units: 'nog geen',
+        meldingen: 'nog geen'
+    };
 
-        setTimeout(() => {
-            this.reset();
-            alert('Server is succesvol aangemaakt!');
-            submitBtn.innerHTML = originalBtnHTML;
-            submitBtn.disabled = false;
-        }, 2000);
+    await db.ref('servers').push(server);
+    document.getElementById('serverForm').reset();
+    loadServers();
+    telActieveServers();
     });
 
-    // Acties op tabelrijen
-    document.querySelectorAll('.fa-edit').forEach(button => {
-        button.addEventListener('click', () => {
-            alert('Server bewerken: Deze functionaliteit wordt nog geïmplementeerd.');
+    function getInitials(name) {
+  return name
+    .split(' ')
+    .map(n => n[0])
+    .join('')
+    .toUpperCase();
+}
+
+    function createBadge(text, color) {
+  const colorClasses = {
+    pro: 'bg-blue-100 text-blue-700',
+    basic: 'bg-yellow-100 text-yellow-800',
+    enterprise: 'bg-purple-100 text-purple-700',
+    custom: 'bg-gray-100 text-gray-700'
+  };
+  return `<span class="text-xs px-2 py-1 rounded-full ${colorClasses[text] || 'bg-gray-100 text-gray-700'}">${text.charAt(0).toUpperCase() + text.slice(1)}</span>`;
+}
+
+    function createStatusBadge(status) {
+  const statuses = {
+    actief: 'bg-green-100 text-green-700',
+    gesuspendeerd: 'bg-orange-100 text-orange-700',
+    uitgeschakeld: 'bg-red-100 text-red-700',
+    onderhoud: 'bg-yellow-100 text-yellow-700'
+  };
+  return `<span class="text-xs px-2 py-1 rounded-full ${statuses[status.toLowerCase()] || 'bg-gray-200 text-gray-600'}">${status}</span>`;
+}
+
+    function loadServers() {
+    const serverList = document.getElementById('serverList');
+    serverList.innerHTML = '';
+    db.ref('servers').on('value', snapshot => {
+        serverList.innerHTML = '';
+        snapshot.forEach(child => {
+        const data = child.val();
+        const initials = getInitials(data.gebruiker || '');
+        const row = document.createElement('div');
+        row.className = 'flex justify-between items-center border-b pb-3';
+
+        row.innerHTML = `
+            <div>
+            <p class="font-semibold">${data.servernaam}</p>
+            <p class="text-xs text-gray-500">IP: 192.168.1.${Math.floor(Math.random() * 100 + 10)}</p>
+            </div>
+            <div class="flex items-center space-x-4">
+            <div class="flex items-center space-x-2">
+                <div class="bg-gray-200 rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">${initials}</div>
+                <span class="text-sm">${data.gebruiker}</span>
+            </div>
+            ${createBadge(data.pakket, data.pakket)}
+            <span class="text-sm">${data.datum}</span>
+            ${createStatusBadge(data.status || 'actief')}
+            <div class="flex space-x-2">
+                <button class="text-blue-600 hover:text-blue-800"><i class="fas fa-edit"></i></button>
+                <button onclick="deleteServer('${child.key}')" class="text-red-600 hover:text-red-800"><i class="fas fa-trash"></i></button>
+            </div>
+            </div>
+        `;
+        serverList.appendChild(row);
         });
     });
-
-    document.querySelectorAll('.fa-trash').forEach(button => {
-        button.addEventListener('click', function () {
-            if (confirm('Weet u zeker dat u deze server wilt verwijderen?')) {
-                const row = this.closest('tr');
-
-                const deleteSpinner = document.createElement('i');
-                deleteSpinner.className = 'fas fa-spinner animate-spin text-red-600';
-                this.parentElement.replaceChild(deleteSpinner, this);
-
-                row.style.backgroundColor = '#ff00001a';
-
-                setTimeout(() => {
-                    row.remove();
-                    alert('Server is succesvol verwijderd');
-                }, 1500);
-            }
-        });
+    }
+    
+    function telActieveServers() {
+  db.ref('servers').once('value', snapshot => {
+    let count = 0;
+    snapshot.forEach(child => {
+      const data = child.val();
+      if (data.status && data.status.toLowerCase() === 'actief') {
+        count++;
+      }
     });
-
-});
-</script>
+    document.getElementById('aantalActieveServers').textContent = count;
+  });
+}
+    
+    function deleteServer(id) {
+      if (confirm('Weet je zeker dat je deze server wilt verwijderen?')) {
+        db.ref('servers/' + id).remove();
+      }
+    }
+  </script>
 </body>
 </html>
