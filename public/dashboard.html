@@ -200,15 +200,25 @@ fetch('/api/luchtalarm/palen')
                 <div id="settingsView" class="h-full hidden p-4 overflow-y-auto">
                     <div class="max-w-3xl mx-auto">
                         <h2 class="text-2xl font-bold mb-6">Instellingen</h2>
-
                         <div class="bg-gray-800 rounded-lg p-6 mb-6">
-                            <h3 class="text-xl font-semibold mb-4">Kies de Server die je wil zien.</h3>
-                            <select id="serverIdInput" class="bg-gray-700 border border-gray-600 rounded px-4 py-2 w-full">
-                                <option value="test1">test1</option>
-                            </select>
-                            <button onclick="saveServerId()" class="bg-blue-600 hover:bg-blue-700 text-white mt-2 px-4 py-2 rounded">
-                                Opslaan Server ID
+                                                    
+                        <h3 class="text-xl font-semibold mb-4 text-white">Jouw Community ID</h3>
+
+                        <div class="flex">
+                            <input
+                            type="text"
+                            id="communityIdDisplay"
+                            readonly
+                            class="bg-gray-700 text-white border border-gray-600 rounded-l px-4 py-2 w-full"
+                            value="CommunityID wordt geladen..."
+                            />
+                            <button
+                            onclick="copyCommunityId()"
+                            class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-r"
+                            >
+                            Kopieer
                             </button>
+                        </div>
                         </div>
 
                         <div class="bg-gray-800 rounded-lg p-6 mb-6">
@@ -661,16 +671,36 @@ auth.onAuthStateChanged(user => {
 
         // Functions
 
-function saveServerId() {
-    const serverId = document.getElementById('serverIdInput').value;
-    if (!serverId) {
-        showNotification(" Kies een geldige server id", "error");
+function copyCommunityId() {
+    const communityId = localStorage.getItem('serverName'); // of welke key jij gebruikt voor CommunityID
+    if (!communityId) {
+        showNotification('Community ID veld niet gevonden.', 3000);
+        alert('Community ID niet gevonden in localStorage.');
         return;
     }
-    localStorage.setItem('serverId', serverId);
-    console.log('local Stoarge:', localStorage)
-    showNotification(' Server opgeslagen: ${serverid}', "succes");
-}
+
+    // Maak een tijdelijk textarea element aan om te kopiëren
+    const tempInput = document.createElement('textarea');
+    tempInput.value = communityId;
+    document.body.appendChild(tempInput);
+    tempInput.select();
+    tempInput.setSelectionRange(0, 99999); // Voor mobiel
+
+    try {
+        const successful = document.execCommand('copy');
+        if (successful) {
+            showNotification('Community ID gekopieerd', 3000);
+        // alert('Community ID gekopieerd naar klembord: ' + communityId);
+        } else {
+            showNotification('Kon Community ID niet kopiëren.', 3000)
+        alert('Kon Community ID niet kopiëren.');
+        }
+    } catch (err) {
+        alert('Fout bij kopiëren: ' + err.message, 3000);
+    }
+
+    document.body.removeChild(tempInput);
+    }
 
 function scanKenteken() {
   const input = document.getElementById('anprScanInput').value.trim().toUpperCase();
@@ -1901,13 +1931,12 @@ function zoomToCall(callId) {
     emergencyMarkers[call.id].openPopup(); // Open popup op de marker
 }
 
-
 document.addEventListener('DOMContentLoaded', function() {
-        fetchEmergencyReports();
-        setInterval(fetchEmergencyReports, 30000);
+    fetchEmergencyReports();
+    setInterval(fetchEmergencyReports, 30000);
+
     // Selecteer de 'Meer info' knoppen
     const meerInfoButtons = document.querySelectorAll('meerinfo');
-    
     meerInfoButtons.forEach(button => {
         button.addEventListener('click', function(event) {
             const callId = event.target.getAttribute('data-id');
@@ -1915,15 +1944,15 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Event listener voor het sluiten van de modal
-    document.getElementById('closeCallDetails').addEventListener('click', function() {
-        document.getElementById('callDetailsModal').classList.add('hidden');
-    });
+    // CommunityID inladen en tonen
+    const communityId = localStorage.getItem('serverName'); // key voor CommunityID
+    const inputField = document.getElementById('communityIdDisplay');
 
-    // Event listener voor het afhandelen van de melding
-    document.getElementById('closeCallBtn').addEventListener('click', function() {
-        document.getElementById('callDetailsModal').classList.add('hidden');
-    });
+    if (communityId && inputField) {
+        inputField.value = communityId;
+    } else if (inputField) {
+        inputField.value = "CommunityID niet gevonden.";
+    }
 });
 
 // is voor het geluid de activeren. 
