@@ -480,103 +480,93 @@
         </div>
     </div>
 
-    <script>
-        // Simulate login functionality (In a real app, this would integrate with Firebase Auth)
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            
-            // Simple validation
-            if(email && password) {
-                // Show login loading state
-                const loginBtn = this.querySelector('button[type="submit"]');
-                const originalBtnHTML = loginBtn.innerHTML;
-                loginBtn.innerHTML = '<i class="fas fa-spinner animate-spin"></i> <span>Bezig met inloggen...</span>';
-                loginBtn.disabled = true;
-                
-                // Simulate API call
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+    // Inloggen
+    const loginForm = document.getElementById('loginForm');
+    const loginError = document.getElementById('loginError');
+    const loginScreen = document.getElementById('loginScreen');
+    const dashboard = document.getElementById('dashboard');
+
+    loginForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value.trim();
+        const loginBtn = this.querySelector('button[type="submit"]');
+        const originalBtnHTML = loginBtn.innerHTML;
+
+        if (email && password) {
+            loginBtn.innerHTML = '<i class="fas fa-spinner animate-spin"></i> <span>Bezig met inloggen...</span>';
+            loginBtn.disabled = true;
+
+            setTimeout(() => {
+                loginScreen.classList.add('hidden');
+                dashboard.classList.remove('hidden');
+
+                loginBtn.innerHTML = originalBtnHTML;
+                loginBtn.disabled = false;
+                loginForm.reset();
+            }, 1500);
+        } else {
+            loginError.classList.remove('hidden');
+            setTimeout(() => loginError.classList.add('hidden'), 3000);
+        }
+    });
+
+    // Uitloggen
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+        dashboard.classList.add('hidden');
+        loginScreen.classList.remove('hidden');
+    });
+
+    // Server aanmaken
+    const serverForm = document.getElementById('serverForm');
+    serverForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalBtnHTML = submitBtn.innerHTML;
+
+        submitBtn.innerHTML = '<i class="fas fa-spinner animate-spin"></i> <span>Server wordt aangemaakt...</span>';
+        submitBtn.disabled = true;
+
+        setTimeout(() => {
+            this.reset();
+            alert('Server is succesvol aangemaakt!');
+            submitBtn.innerHTML = originalBtnHTML;
+            submitBtn.disabled = false;
+        }, 2000);
+    });
+
+    // Acties op tabelrijen
+    document.querySelectorAll('.fa-edit').forEach(button => {
+        button.addEventListener('click', () => {
+            alert('Server bewerken: Deze functionaliteit wordt nog geïmplementeerd.');
+        });
+    });
+
+    document.querySelectorAll('.fa-trash').forEach(button => {
+        button.addEventListener('click', function () {
+            if (confirm('Weet u zeker dat u deze server wilt verwijderen?')) {
+                const row = this.closest('tr');
+
+                const deleteSpinner = document.createElement('i');
+                deleteSpinner.className = 'fas fa-spinner animate-spin text-red-600';
+                this.parentElement.replaceChild(deleteSpinner, this);
+
+                row.style.backgroundColor = '#ff00001a';
+
                 setTimeout(() => {
-                    // Hide login screen and show dashboard
-                    document.getElementById('loginScreen').classList.add('hidden');
-                    document.getElementById('dashboard').classList.remove('hidden');
-                    
-                    // Reset login button
-                    loginBtn.innerHTML = originalBtnHTML;
-                    loginBtn.disabled = false;
-                    
-                    // Clear form
-                    document.getElementById('loginForm').reset();
+                    row.remove();
+                    alert('Server is succesvol verwijderd');
                 }, 1500);
-            } else {
-                document.getElementById('loginError').classList.remove('hidden');
-                setTimeout(() => {
-                    document.getElementById('loginError').classList.add('hidden');
-                }, 3000);
             }
         });
-        
-        // Logout functionality
-        document.getElementById('logoutBtn').addEventListener('click', function() {
-            document.getElementById('dashboard').classList.add('hidden');
-            document.getElementById('loginScreen').classList.remove('hidden');
-        });
-        
-        // Server form submission
-        document.getElementById('serverForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const submitBtn = this.querySelector('button[type="submit"]');
-            const originalBtnHTML = submitBtn.innerHTML;
-            
-            // Show loading state
-            submitBtn.innerHTML = '<i class="fas fa-spinner animate-spin"></i> <span>Server wordt aangemaakt...</span>';
-            submitBtn.disabled = true;
-            
-            // Simulate creation process
-            setTimeout(() => {
-                // Reset form
-                this.reset();
-                
-                // Show success notification
-                alert('Server is succesvol aangemaakt!');
-                
-                // Reset button
-                submitBtn.innerHTML = originalBtnHTML;
-                submitBtn.disabled = false;
-            }, 2000);
-        });
-        
-        // Table row actions
-        const editButtons = document.querySelectorAll('.fa-edit');
-        const deleteButtons = document.querySelectorAll('.fa-trash');
-        
-        editButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                alert('Server bewerken: Deze functionaliteit wordt nog geïmplementeerd.');
-            });
-        });
-        
-        deleteButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                if(confirm('Weet u zeker dat u deze server wilt verwijderen?')) {
-                    const row = this.closest('tr');
-                    row.style.backgroundColor = '#ff00001a';
-                    row.querySelector('.fa-spinner')?.classList.add('hidden');
-                    
-                    const deleteSpinner = document.createElement('i');
-                    deleteSpinner.className = 'fas fa-spinner animate-spin text-red-600';
-                    this.parentElement.replaceChild(deleteSpinner, this);
-                    
-                    // Simulate deletion
-                    setTimeout(() => {
-                        row.remove();
-                        alert('Server is succesvol verwijderd');
-                    }, 1500);
-                }
-            });
-        });
-    </script>
+    });
+
+});
+</script>
 </body>
 </html>
