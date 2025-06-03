@@ -204,10 +204,7 @@ fetch('/api/luchtalarm/palen')
                         <div class="bg-gray-800 rounded-lg p-6 mb-6">
                             <h3 class="text-xl font-semibold mb-4">Kies de Server die je wil zien.</h3>
                             <select id="serverIdInput" class="bg-gray-700 border border-gray-600 rounded px-4 py-2 w-full">
-                                <option value="">-- Selecteer jouw server --</option>
-                                <option value="server_haren">Server Haren</option>
-                                <option value="server_tilburg">Server Tilburg</option>
-                                <option value="server_apeldoorn">Server Apeldoorn</option>
+                                <option value="test1">test1</option>
                             </select>
                             <button onclick="saveServerId()" class="bg-blue-600 hover:bg-blue-700 text-white mt-2 px-4 py-2 rounded">
                                 Opslaan Server ID
@@ -552,23 +549,24 @@ fetch('/api/luchtalarm/palen')
 
 auth.onAuthStateChanged(user => {
   if (!user) {
-    window.location.href = 'index.html';
+    // window.location.href = 'index.html';
   } else {
     const serverId = localStorage.getItem("serverId");
+    const serverName = localStorage.getItem("serverName");
 
     if (!serverId) {
       alert("❌ Geen server geselecteerd. Ga naar instellingen en kies je server.");
-      window.location.href = 'index.html';
+    //   window.location.href = 'index.html';
       return;
     }
 
     // Controleer of serverId bestaat in Firebase
-    db.ref(`servers/${serverId}`).once('value')
+    db.ref(`servers/${serverId}/Communityid`).once('value')
       .then(snapshot => {
         if (!snapshot.exists()) {
           alert("❌ Deze server bestaat niet in het systeem.");
           localStorage.removeItem("serverId");
-          window.location.href = 'index.html';
+        //   window.location.href = 'index.html';
         } else {
           console.log("✅ Server gevalideerd:", serverId);
           // Laad dashboard zoals normaal
@@ -577,7 +575,7 @@ auth.onAuthStateChanged(user => {
       .catch(err => {
         console.error("❌ Fout bij controleren server:", err);
         alert("Kon de server niet controleren. Probeer opnieuw.");
-        window.location.href = 'index.html';
+        // window.location.href = 'index.html';
       });
   }
 });
@@ -586,9 +584,8 @@ auth.onAuthStateChanged(user => {
         // API Configuration
         // https://gmsnederland-production.up.railway.app
         const API_URL = 'https://gmsnederland-production.up.railway.app';
-        const serverId = localStorage.getItem("serverId") || serverId;
+        const serverId = localStorage.getItem("serverId");
         console.log("✅ Gekozen serverId:", serverId);
-        localStorage.setItem("serverId", serverId); // dit onthoudt het in de browser
         const API_BASE_URL = 'gmsnederland-production.up.railway.app'; // Wijzig dit naar je backend URL
         const API_KEY = 'gms_s9l5z0k2hz8kvd5ccoxus'; // vervang dit met de juiste sleutel
         let currentCallId = null;
@@ -671,6 +668,7 @@ function saveServerId() {
         return;
     }
     localStorage.setItem('serverId', serverId);
+    console.log('local Stoarge:', localStorage)
     showNotification(' Server opgeslagen: ${serverid}', "succes");
 }
 
