@@ -537,6 +537,7 @@ fetch('/api/luchtalarm/palen')
 
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
     <script>
         //firebase
           const firebaseConfig = {
@@ -544,19 +545,41 @@ fetch('/api/luchtalarm/palen')
         authDomain: "gmsnederland-3029e.firebaseapp.com",
         projectId: "gmsnederland-3029",
   };
-
   firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth();
+  const db = firebase.database();
 
-  auth.onAuthStateChanged(user => {
-    if (!user) {
-      // Niet ingelogd? Terug naar inlogpagina
+auth.onAuthStateChanged(user => {
+  if (!user) {
+    window.location.href = 'inlog.html';
+  } else {
+    const serverId = localStorage.getItem("serverId");
+
+    if (!serverId) {
+      alert("❌ Geen server geselecteerd. Ga naar instellingen en kies je server.");
       window.location.href = 'inlog.html';
-    } else {
-      // Wel ingelogd: laat de pagina zien of doe iets anders
-      console.log('Gebruiker is ingelogd:', user.email);
+      return;
     }
-  });
+
+    // Controleer of serverId bestaat in Firebase
+    db.ref(`servers/${serverId}`).once('value')
+      .then(snapshot => {
+        if (!snapshot.exists()) {
+          alert("❌ Deze server bestaat niet in het systeem.");
+          localStorage.removeItem("serverId");
+          window.location.href = 'inlog.html';
+        } else {
+          console.log("✅ Server gevalideerd:", serverId);
+          // Laad dashboard zoals normaal
+        }
+      })
+      .catch(err => {
+        console.error("❌ Fout bij controleren server:", err);
+        alert("Kon de server niet controleren. Probeer opnieuw.");
+        window.location.href = 'inlog.html';
+      });
+  }
+});
   // end
         console.log('🌐 Start fetchEmergencyReports()');
         // API Configuration
