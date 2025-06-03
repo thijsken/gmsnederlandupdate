@@ -72,7 +72,7 @@
             </div>
             <div>
                 <p class="text-gray-600">Actieve gebruikers</p>
-                <p class="text-2xl font-bold">79</p>
+                <p class="text-2xl font-bold"><span id="aantalActivegebruikers">0</span></p>
             </div>
             </div>
             <div class="bg-white p-6 rounded-lg shadow flex items-center space-x-4">
@@ -81,7 +81,7 @@
             </div>
             <div>
                 <p class="text-gray-600">Onderhoud</p>
-                <p class="text-2xl font-bold">3</p>
+                <p class="text-2xl font-bold"><span id="aantalOnderhoud">0</span></p>
             </div>
             </div>
             <div class="bg-white p-6 rounded-lg shadow flex items-center space-x-4">
@@ -90,7 +90,7 @@
             </div>
             <div>
                 <p class="text-gray-600">Uitgeschakeld</p>
-                <p class="text-2xl font-bold">2</p>
+                <p class="text-2xl font-bold"><span id="aanstaluitgeschakeld">0</span></p>
             </div>
             </div>
         </div>
@@ -137,8 +137,22 @@
         <input type="text" placeholder="Zoek servers..." class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg w-full" />
         <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
       </div>
-      <div class="space-y-4" id="serverList">
-        <!-- Dynamische inhoud via JavaScript -->
+      <div class="overflow-x-auto">
+        <table class="w-full table-auto border">
+            <thead class="bg-gray-100 text-left">
+                <tr>
+                    <th class="px-4 py-2 border">Naam</th>
+                    <th class="px-4 py-2 border">Gebruiker</th>
+                    <th class="px-4 py-2 border">Pakket</th>
+                    <th class="px-4 py-2 border">Datum</th>
+                    <th class="px-4 py-2 border">Status</th>
+                    <th class="px-4 py-2 border">Actie</th>
+                </tr>
+            </thead>
+            <tbody id="serverList">
+                <!-- Dynamisch gevuld via JS -->
+            </tbody>
+        </table>
       </div>
     </section>
   </div>
@@ -155,6 +169,38 @@
     const auth = firebase.auth();
     const db = firebase.database();
 
+    // voor active gebruikers op dat moment.
+    auth.onAuthStateChanged(user => {
+  if (user) {
+    const userStatusDatabaseRef = db.ref('/status/' + user.uid);
+
+    const isOfflineForDatabase = {
+      state: 'offline',
+      last_changed: firebase.database.ServerValue.TIMESTAMP,
+    };
+
+    const isOnlineForDatabase = {
+      state: 'online',
+      last_changed: firebase.database.ServerValue.TIMESTAMP,
+    };
+
+    db.ref('.info/connected').on('value', snapshot => {
+      if (snapshot.val() === false) return;
+
+      userStatusDatabaseRef
+        .onDisconnect()
+        .set(isOfflineForDatabase)
+        .then(() => {
+          userStatusDatabaseRef.set(isOnlineForDatabase);
+        });
+    });
+
+    telActieveGebruikers(); // start de teller zodra ingelogd
+  } else {
+    document.getElementById('aantalActivegebruikers').textContent = 0;
+  }
+});
+
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const email = document.getElementById('email').value;
@@ -165,6 +211,8 @@
         document.getElementById('dashboard').classList.remove('hidden');
         loadServers();
         telActieveServers();
+        telonderhoudactive();
+        teluitgeschakeldServers();
       } catch (err) {
         document.getElementById('loginError').classList.remove('hidden');
       }
@@ -196,6 +244,8 @@
     document.getElementById('serverForm').reset();
     loadServers();
     telActieveServers();
+    telonderhoudactive();
+    teluitgeschakeldServers();
     });
 
     function getInitials(name) {
@@ -217,63 +267,91 @@
 }
 
     function createStatusBadge(status) {
-  const statuses = {
-    actief: 'bg-green-100 text-green-700',
-    gesuspendeerd: 'bg-orange-100 text-orange-700',
-    uitgeschakeld: 'bg-red-100 text-red-700',
-    onderhoud: 'bg-yellow-100 text-yellow-700'
-  };
-  return `<span class="text-xs px-2 py-1 rounded-full ${statuses[status.toLowerCase()] || 'bg-gray-200 text-gray-600'}">${status}</span>`;
+        const statuses = {
+        actief: 'bg-green-100 text-green-700',
+        gesuspendeerd: 'bg-orange-100 text-orange-700',
+        uitgeschakeld: 'bg-red-100 text-red-700',
+        onderhoud: 'bg-yellow-100 text-yellow-700'
+    };
+    return `<span class="text-xs px-2 py-1 rounded-full ${statuses[status.toLowerCase()] || 'bg-gray-200 text-gray-600'}">${status}</span>`;
 }
 
     function loadServers() {
-    const serverList = document.getElementById('serverList');
+const serverList = document.getElementById('serverList');
+serverList.innerHTML = '';
+db.ref('servers').on('value', snapshot => {
     serverList.innerHTML = '';
-    db.ref('servers').on('value', snapshot => {
-        serverList.innerHTML = '';
-        snapshot.forEach(child => {
+    snapshot.forEach(child => {
         const data = child.val();
         const initials = getInitials(data.gebruiker || '');
-        const row = document.createElement('div');
-        row.className = 'flex justify-between items-center border-b pb-3';
+        const row = document.createElement('tr');
 
         row.innerHTML = `
-            <div>
-            <p class="font-semibold">${data.servernaam}</p>
-            <p class="text-xs text-gray-500">IP: 192.168.1.${Math.floor(Math.random() * 100 + 10)}</p>
-            </div>
-            <div class="flex items-center space-x-4">
-            <div class="flex items-center space-x-2">
-                <div class="bg-gray-200 rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">${initials}</div>
-                <span class="text-sm">${data.gebruiker}</span>
-            </div>
-            ${createBadge(data.pakket, data.pakket)}
-            <span class="text-sm">${data.datum}</span>
-            ${createStatusBadge(data.status || 'actief')}
-            <div class="flex space-x-2">
-                <button class="text-blue-600 hover:text-blue-800"><i class="fas fa-edit"></i></button>
+            <td class="px-4 py-2 border">${data.servernaam}</td>
+            <td class="px-4 py-2 border">
+                <div class="flex items-center space-x-2">
+                    <div class="bg-gray-200 rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">${initials}</div>
+                    <span class="text-sm">${data.gebruiker}</span>
+                </div>
+            </td>
+            <td class="px-4 py-2 border">${data.pakket}</td>
+            <td class="px-4 py-2 border">${data.datum}</td>
+            <td class="px-4 py-2 border">${data.status} </td>
+            <td class="px-4 py-2 border">${createStatusBadge(data.status || 'actief')}
                 <button onclick="deleteServer('${child.key}')" class="text-red-600 hover:text-red-800"><i class="fas fa-trash"></i></button>
-            </div>
-            </div>
+            </td>
         `;
         serverList.appendChild(row);
-        });
     });
+});
     }
     
     function telActieveServers() {
-  db.ref('servers').once('value', snapshot => {
-    let count = 0;
-    snapshot.forEach(child => {
-      const data = child.val();
-      if (data.status && data.status.toLowerCase() === 'actief') {
-        count++;
-      }
+        db.ref('servers').on('value', snapshot => {
+            let count = 0;
+            snapshot.forEach(child => {
+            const data = child.val();
+            if (data.status && data.status.toLowerCase() === 'actief') {
+                count++;
+            }
+            });
+            document.getElementById('aantalActieveServers').textContent = count;
+        });
+    }
+
+    function teluitgeschakeldServers() {
+        db.ref('servers').on('value', snapshot => {
+            let count = 0;
+            snapshot.forEach(child => {
+                const data = child.val();
+                if (data.status && data.status.toLowerCase() === 'uitgeschakeld') {
+                    count++;
+                }
+            });
+            document.getElementById('aanstaluitgeschakeld').textContent = count;
+        });
+    }
+
+    function telActieveGebruikers() {
+    db.ref('/status').orderByChild('state').equalTo('online').on('value', snapshot => {
+        const onlineCount = snapshot.numChildren();
+        document.getElementById('aantalActivegebruikers').textContent = onlineCount;
     });
-    document.getElementById('aantalActieveServers').textContent = count;
-  });
-}
-    
+    }
+
+    function telonderhoudactive() {
+        db.ref('servers').on('value', snapshot => {
+            let count = 0;
+            snapshot.forEach(child => {
+                const data = child.val();
+                if (data.status && data.status.toLowerCase() === 'onderhoud') {
+                    count++;
+                }
+            });
+            document.getElementById('aantalOnderhoud').textContent = count;
+        });
+    }
+
     function deleteServer(id) {
       if (confirm('Weet je zeker dat je deze server wilt verwijderen?')) {
         db.ref('servers/' + id).remove();
