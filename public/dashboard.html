@@ -552,13 +552,13 @@ fetch('/api/luchtalarm/palen')
 
 auth.onAuthStateChanged(user => {
   if (!user) {
-    window.location.href = 'inlog.html';
+    window.location.href = 'index.html';
   } else {
     const serverId = localStorage.getItem("serverId");
 
     if (!serverId) {
       alert("❌ Geen server geselecteerd. Ga naar instellingen en kies je server.");
-      window.location.href = 'inlog.html';
+      window.location.href = 'index.html';
       return;
     }
 
@@ -568,7 +568,7 @@ auth.onAuthStateChanged(user => {
         if (!snapshot.exists()) {
           alert("❌ Deze server bestaat niet in het systeem.");
           localStorage.removeItem("serverId");
-          window.location.href = 'inlog.html';
+          window.location.href = 'index.html';
         } else {
           console.log("✅ Server gevalideerd:", serverId);
           // Laad dashboard zoals normaal
@@ -577,7 +577,7 @@ auth.onAuthStateChanged(user => {
       .catch(err => {
         console.error("❌ Fout bij controleren server:", err);
         alert("Kon de server niet controleren. Probeer opnieuw.");
-        window.location.href = 'inlog.html';
+        window.location.href = 'index.html';
       });
   }
 });
