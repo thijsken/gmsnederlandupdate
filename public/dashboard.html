@@ -586,7 +586,7 @@ auth.onAuthStateChanged(user => {
         // API Configuration
         // https://gmsnederland-production.up.railway.app
         const API_URL = 'https://gmsnederland-production.up.railway.app';
-        const serverId = localStorage.getItem("serverId");
+        const serverId = localStorage.getItem("serverId") || serverId;
         console.log("✅ Gekozen serverId:", serverId);
         localStorage.setItem("serverId", serverId); // dit onthoudt het in de browser
         const API_BASE_URL = 'gmsnederland-production.up.railway.app'; // Wijzig dit naar je backend URL
