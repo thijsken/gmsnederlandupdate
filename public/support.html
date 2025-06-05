@@ -287,9 +287,6 @@
   // Pas dit aan naar de juiste URL van jouw dashboard
   window.location.href = '/admindeel.html'; 
 });
-document.getElementById('enable-notifications-btn').addEventListener('click', () => {
-  askNotificationPermission();
-});
 window.addEventListener('DOMContentLoaded', () => {
   document.body.addEventListener('click', () => {
     askNotificationPermission();
