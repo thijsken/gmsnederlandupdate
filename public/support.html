@@ -286,6 +286,10 @@
   // Pas dit aan naar de juiste URL van jouw dashboard
   window.location.href = '/admindeel.html'; 
 });
+document.getElementById('enable-notifications-btn').addEventListener('click', () => {
+  askNotificationPermission();
+});
+
 
 
   let currentChatId = null;
@@ -340,8 +344,7 @@ function loadChats() {
           chatListEl.insertBefore(li, chatListEl.firstChild);
           highlightNewChat(li);
           newChatSound.play().catch(e => console.log("Audio play prevented:", e));
-                    showNewChatNotification(change.doc.id, chat.customerName);
-
+          showNewChatNotification(change.doc.id, chat.customerName);
         }
       }
       if (change.type === 'removed') {
