@@ -268,7 +268,7 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-app.js";
-  import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, serverTimestamp, getDoc } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-firestore.js";
+  import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, serverTimestamp, getDoc, Timestamp } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyAuHf66GFU9KKFVkJPAS3a1qaX2nG9xH_s",
@@ -388,7 +388,7 @@
     const newMessage = {
       text,
       sender: 'customer',
-      timestamp: serverTimestamp()
+      timestamp: Timestamp.now()  // Vervang serverTimestamp() hier
     };
 
     currentMessages.push(newMessage);
