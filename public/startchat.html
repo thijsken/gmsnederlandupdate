@@ -221,6 +221,13 @@
     <button id="start-chat" disabled aria-disabled="true" aria-label="Start de chat">Start chat</button>
   </section>
 
+  <select id="question-type" aria-label="Kies je vraagsoort" required style="padding:16px 20px; font-size:1rem; border:2px solid #ccc; border-radius:16px; transition: border-color 0.25s ease;">
+  <option value="" disabled selected>-- Kies je vraag --</option>
+  <option value="support_met_GMS_samenwerking">Support met GMS samenwerking</option>
+  <option value="klachten_mod">Klachten / Mod</option>
+  <option value="anders">Anders</option>
+</select>
+
   <section id="chat-container" aria-live="polite" aria-relevant="additions" aria-atomic="false">
     <div id="messages" role="log" aria-live="polite" aria-atomic="false"></div>
     <form id="input-area" onsubmit="return false;">
@@ -251,6 +258,7 @@
   const messagesDiv = document.getElementById('messages');
   const msgInput = document.getElementById('msg-input');
   const sendBtn = document.getElementById('send-btn');
+  const questionTypeSelect = document.getElementById('question-type');
 
   let currentChatId = null;
   let unsubscribeMessages = null;
@@ -340,6 +348,70 @@ msgInput.addEventListener('keypress', e => {
   }
 });
 
+  // Pas validatie aan: naam en dropdown moeten ingevuld zijn
+function validateStart() {
+  const validName = customerNameInput.value.trim().length > 0;
+  const validQuestion = questionTypeSelect.value !== "";
+  const canStart = validName && validQuestion && isChatOpen();
+  startChatBtn.disabled = !canStart;
+  startChatBtn.setAttribute('aria-disabled', String(!canStart));
+}
+customerNameInput.addEventListener('input', validateStart);
+questionTypeSelect.addEventListener('change', validateStart);
+
+// Start chat knop onclick
+startChatBtn.onclick = async () => {
+  if (currentChatId) {
+    alert("Je hebt al een chat open. Sluit eerst deze chat voordat je een nieuwe start.");
+    return; // voorkom nieuwe chat starten
+  }
+
+  if (unsubscribeMessages) {
+    unsubscribeMessages();
+    unsubscribeMessages = null;
+  }
+  if (unsubscribeChatStatus) {
+    unsubscribeChatStatus();
+    unsubscribeChatStatus = null;
+  }
+
+  const name = customerNameInput.value.trim();
+  const question = questionTypeSelect.value;
+  if (!name || !question) return;
+
+  startChatBtn.disabled = true;
+  customerNameInput.disabled = true;
+  questionTypeSelect.disabled = true;
+
+  const combinedName = `${name} - ${question.replace(/_/g, ' ')}`;
+
+  const chatDocRef = await addDoc(collection(db, 'chats'), {
+    customerName: combinedName,
+    status: 'open',
+    createdAt: serverTimestamp(),
+    lastActivity: serverTimestamp(),
+    lastMessage: null
+  });
+
+  currentChatId = chatDocRef.id;
+  startScreen.style.display = 'none';
+  chatContainer.style.display = 'flex';
+  msgInput.focus();
+  sendBtn.disabled = true;
+  sendBtn.setAttribute('aria-disabled', 'true');
+
+  // Welkomstbericht agent
+  const messagesRef = collection(db, 'chats', currentChatId, 'messages');
+  await addDoc(messagesRef, {
+    sender: 'agent',
+    content: `Hallo ${name}! Welkom bij GMSNederland. We staan klaar om je te helpen. Stel gerust je vraag!`,
+    timestamp: serverTimestamp()
+  });
+
+  listenForMessages();
+  listenForChatStatus();
+  listenForAgentTyping();
+};
 
   async function sendMessage() {
     const text = msgInput.value.trim();
