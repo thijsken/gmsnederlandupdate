@@ -293,6 +293,7 @@
   let currentChatId = null;
   let unsubscribeMessages = null;
   let currentCustomerName = null;
+  let isChatClaimedByAgent = false;  // Houdt bij of agent chat geclaimd heeft
 
   function highlightNewChat(chatElement) {
   chatElement.classList.add('flash-yellow');
@@ -400,47 +401,54 @@ function updateChatListItem(li, chat) {
     }
   });
 // voor de chat sluiten.
-  closeChatBtn.addEventListener('click', async () => {
-    if (!currentChatId) return;
+closeChatBtn.addEventListener('click', async () => {
+  if (!currentChatId) return;
 
-    const messagesRef = collection(db, 'chats', currentChatId, 'messages');
+  const messagesRef = collection(db, 'chats', currentChatId, 'messages');
+  const chatDocRef = doc(db, 'chats', currentChatId);
+
+  try {
+    // Voeg eerst een afsluitbericht toe (optioneel)
     await addDoc(messagesRef, {
       sender: 'agent',
       content: 'Deze chat met GMSNederland is beëindigd. Je kunt op elk moment een nieuwe chat starten.',
       timestamp: serverTimestamp()
     });
 
+    // Wacht even zodat bericht zichtbaar is
     await new Promise(resolve => setTimeout(resolve, 500));
 
+    // Verwijder alle berichten in de chat
     const messagesSnapshot = await getDocs(messagesRef);
     const batch = writeBatch(db);
     messagesSnapshot.forEach(docSnap => {
       batch.delete(doc(db, 'chats', currentChatId, 'messages', docSnap.id));
     });
 
-    const chatDocRef = doc(db, 'chats', currentChatId);
+    // Verwijder het chatdocument zelf
     batch.delete(chatDocRef);
+
+    // Voer batch uit
     await batch.commit();
 
+    // Reset UI
     if (unsubscribeMessages) unsubscribeMessages();
     currentChatId = null;
     currentCustomerName = null;
     messagesEl.innerHTML = '';
-    const typingIndicator = document.createElement('div');
-    typingIndicator.id = 'typing-indicator';
-    typingIndicator.style.fontStyle = 'italic';
-    typingIndicator.style.color = '#888';
-    typingIndicator.style.marginTop = '8px';
-    typingIndicator.style.display = 'none';
-    messagesEl.appendChild(typingIndicator);
     chatTitleEl.textContent = 'Selecteer een chat om te starten';
     inputAreaEl.style.display = 'none';
     closeChatBtn.style.display = 'none';
     processChatBtn.style.display = 'none';
 
+    // Active chat verwijderen uit lijst styling
     const activeLi = chatListEl.querySelector('li.active');
     if (activeLi) activeLi.classList.remove('active');
-  });
+
+  } catch (error) {
+    console.error('Fout bij sluiten chat:', error);
+  }
+});
 
 processChatBtn.addEventListener('click', async () => {
   if (!currentChatId) return;
@@ -460,6 +468,9 @@ processChatBtn.addEventListener('click', async () => {
     status: 'processing',
     claimedBy: 'support', // eventueel vervangbaar door unieke agent ID
   });
+
+  // zet flag als support de chat al heeft geclaimt.
+  isChatClaimedByAgent = true;
 
   // Stuur automatisch bericht
   const messagesRef = collection(db, 'chats', currentChatId, 'messages');
@@ -579,9 +590,13 @@ processChatBtn.addEventListener('click', async () => {
         wrapper.appendChild(div);
         wrapper.appendChild(timeSpan);
         messagesEl.appendChild(wrapper);
-    messagesEl.scrollTop = messagesEl.scrollHeight;
-      if (msg.sender == 'customer') {
-        toonNotificatie(currentCustomerName || "Nieuwe klant", msg.content);
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+
+    // Speel geluid en toon notificatie alleen als chat geclaimd is en bericht van klant is
+    if (msg.sender == 'customer' && isChatClaimedByAgent) {
+      const newMessageSound = document.getElementById('new-message-sound');
+      newMessageSound.play().catch(e => console.log("Audio play prevented:", e));
+      toonNotificatie(currentCustomerName || "Nieuwe klant", msg.content);
       }
     });
   });
