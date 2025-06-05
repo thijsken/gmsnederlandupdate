@@ -254,7 +254,6 @@
 </div>
 
 <audio id="new-chat-sound" src="newchat.mp3" preload="auto"></audio>
-
 <script type="module">
 
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-app.js";
@@ -284,6 +283,10 @@
   document.getElementById('back-dashboard-btn').addEventListener('click', () => {
   // Pas dit aan naar de juiste URL van jouw dashboard
   window.location.href = '/admindeel.html'; 
+
+    if (Notification.permission !== 'granted') {
+    Notification.requestPermission();
+  }
 });
 
 
@@ -298,6 +301,16 @@
   }, 3000); // na 3 seconden stoppen met knipperen
 }
 
+  function toonNotificatie(titel, tekst) {
+    if (Notification.permission === 'granted') {
+      new Notification(titel, {
+        body: tekst,
+        icon: 'favicon.ico.png',
+        requireInteraction: true
+      });
+    }
+  }
+
 function loadChats() {
   const newChatSound = document.getElementById('new-chat-sound');
   const chatsRef = collection(db, 'chats');
@@ -311,6 +324,7 @@ function loadChats() {
           chatListEl.insertBefore(li, chatListEl.firstChild);
           highlightNewChat(li);
           newChatSound.play().catch(e => console.log("Audio play prevented:", e));
+          toonNotificatie("Nieuwe chat", `${chat.customerName || "Anonieme klant"} heeft een chat gestart.`);
         }
       }
       if (change.type === 'removed') {
@@ -327,7 +341,6 @@ function loadChats() {
     });
   });
 }
-
 
 function createChatListItem(chatId, chat) {
   const li = document.createElement('li');
@@ -378,7 +391,6 @@ function updateChatListItem(li, chat) {
     li.classList.remove('flash-yellow', 'flash-green');
   }
 }
-
 
 // voor het geel knipperen
   chatListEl.addEventListener('click', async e => {
@@ -567,10 +579,12 @@ processChatBtn.addEventListener('click', async () => {
         wrapper.appendChild(div);
         wrapper.appendChild(timeSpan);
         messagesEl.appendChild(wrapper);
-    });
     messagesEl.scrollTop = messagesEl.scrollHeight;
+      if (msg.sender == 'customer') {
+        toonNotificatie(currentCustomerName || "Nieuwe klant", msg.content);
+      }
     });
-
+  });
 }
 
   agentMsgInput.addEventListener('input', () => {
@@ -583,7 +597,7 @@ processChatBtn.addEventListener('click', async () => {
     }, 2000);
   });
 
-    agentMsgInput.addEventListener('keypress', e => {
+  agentMsgInput.addEventListener('keypress', e => {
     if (e.key === 'Enter' && !sendAgentBtn.disabled) {
         e.preventDefault();           // <-- dit voorkomt dat Enter iets extra doet
         sendMessage();
