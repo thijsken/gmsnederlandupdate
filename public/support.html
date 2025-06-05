@@ -262,7 +262,7 @@
   import {
     getFirestore, collection, query, orderBy, onSnapshot,
     doc, addDoc, updateDoc, serverTimestamp,
-    getDoc, getDocs, writeBatch, Timestamp
+    getDoc, getDocs, writeBatch
   } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-firestore.js";
 
   const firebaseConfig = {
@@ -415,7 +415,7 @@ function updateChatListItem(li, chat) {
     await addDoc(messagesRef, {
       sender: 'agent',
       content: 'Deze chat met GMSNederland is beëindigd. Je kunt op elk moment een nieuwe chat starten.',
-      timestamp: Timestamp.now()  // Vervang serverTimestamp() hier
+      timestamp: serverTimestamp()
     });
 
     await new Promise(resolve => setTimeout(resolve, 500));
@@ -475,7 +475,7 @@ processChatBtn.addEventListener('click', async () => {
     sender: 'agent',
     content: 'GMS Nederland — U bent verbonden met onze supportafdeling. Een ervaren specialist staat direct voor u klaar om uw vraag snel, effectief en met de hoogste kwaliteit te beantwoorden. Wij danken u voor uw vertrouwen in GMS Nederland en helpen u graag verder.',
     logoUrl: '/public/gmsnederlandgijsachtergrond.png',
-    timestamp: Timestamp.now()  // Vervang serverTimestamp() hier
+    timestamp: serverTimestamp()
   });
 });
 
@@ -621,13 +621,13 @@ processChatBtn.addEventListener('click', async () => {
     await addDoc(messagesRef, {
       sender: 'agent',
       content: text,
-      timestamp: Timestamp.now()  // Vervang serverTimestamp() hier
+      timestamp: serverTimestamp()
     });
 
     const chatDocRef = doc(db, 'chats', currentChatId);
     await updateDoc(chatDocRef, {
       lastMessage: text, // string
-      timestamp: Timestamp.now()  // Vervang serverTimestamp() hier
+      lastActivity: serverTimestamp() // timestamp, geen array!
     });
 
     agentMsgInput.value = '';
