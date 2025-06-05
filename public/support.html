@@ -340,6 +340,8 @@ function loadChats() {
           chatListEl.insertBefore(li, chatListEl.firstChild);
           highlightNewChat(li);
           newChatSound.play().catch(e => console.log("Audio play prevented:", e));
+                    showNewChatNotification(change.doc.id, chat.customerName);
+
         }
       }
       if (change.type === 'removed') {
