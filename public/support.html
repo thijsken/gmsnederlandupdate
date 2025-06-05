@@ -239,7 +239,6 @@
     <button id="back-dashboard-btn" title="Ga terug naar dashboard" style="margin-left: auto; background-color:#3498db; color:white; border:none; border-radius:6px; cursor:pointer; padding: 6px 12px;">← Terug naar dashboard</button>
     <button id="close-chat-btn" title="Sluit deze chat" style="display:none;">Sluit chat</button>
     <button id="process-chat-btn" title="Zet chat in behandeling" style="display:none; margin-left: 10px; background-color:#27ae60; color:white; border:none; border-radius:6px; cursor:pointer;">In behandeling</button>
-    
   </div>
   <div id="messages" aria-live="polite" aria-relevant="additions"></div>
   <div id="input-area" style="display:none;">
@@ -257,7 +256,6 @@
 <audio id="new-chat-sound" src="newchat.mp3" preload="auto"></audio>
 
 <script type="module">
-  askNotificationPermission();
 
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-app.js";
   import {
@@ -287,12 +285,6 @@
   // Pas dit aan naar de juiste URL van jouw dashboard
   window.location.href = '/admindeel.html'; 
 });
-window.addEventListener('DOMContentLoaded', () => {
-  document.body.addEventListener('click', () => {
-    askNotificationPermission();
-  }, { once: true }); // alleen de eerste keer
-});
-
 
 
   let currentChatId = null;
@@ -304,34 +296,6 @@ window.addEventListener('DOMContentLoaded', () => {
   setTimeout(() => {
     chatElement.classList.remove('flash-yellow');
   }, 3000); // na 3 seconden stoppen met knipperen
-}
-
-function askNotificationPermission() {
-  if (!('Notification' in window)) {
-    console.log('Deze browser ondersteunt geen notificaties.');
-    return;
-  }
-  if (Notification.permission === 'default') {
-    Notification.requestPermission().then(permission => {
-      console.log('Notificatie toestemming:', permission);
-    });
-  }
-}
-
-function showNewChatNotification(chatId, customerName) {
-  if (Notification.permission === 'granted') {
-    const notification = new Notification('Nieuwe chat binnengekomen', {
-      body: `Chat van ${customerName || 'Anonieme klant'}`,
-      icon: '/favicon.ico.png', // bijvoorbeeld jouw favicon of logo
-      tag: chatId
-    });
-
-    notification.onclick = () => {
-      window.focus();
-      openChat(chatId);
-      notification.close();
-    };
-  }
 }
 
 function loadChats() {
@@ -347,7 +311,6 @@ function loadChats() {
           chatListEl.insertBefore(li, chatListEl.firstChild);
           highlightNewChat(li);
           newChatSound.play().catch(e => console.log("Audio play prevented:", e));
-          showNewChatNotification(change.doc.id, chat.customerName);
         }
       }
       if (change.type === 'removed') {
@@ -364,6 +327,7 @@ function loadChats() {
     });
   });
 }
+
 
 function createChatListItem(chatId, chat) {
   const li = document.createElement('li');
@@ -414,6 +378,7 @@ function updateChatListItem(li, chat) {
     li.classList.remove('flash-yellow', 'flash-green');
   }
 }
+
 
 // voor het geel knipperen
   chatListEl.addEventListener('click', async e => {
