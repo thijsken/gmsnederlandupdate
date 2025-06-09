@@ -1,56 +1,79 @@
-import admin from 'firebase-admin';
+// routes/meldingen.js
+const express = require('express');
+const router = express.Router();
+const { db } = require('./firebaseAdmin');
 
-const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+// POST: nieuwe melding
+router.post('/', (req, res) => {
+  const { serverId, type, location, playerName } = req.body;
 
-if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-    databaseURL: 'https://gmsnederland-3029e-default-rtdb.europe-west1.firebasedatabase.app',
-  });
-}
+  if (!serverId || !type || !location || !playerName) {
+    return res.status(400).json({ message: 'Fout: ongeldige melding of geen serverId' });
+  }
 
-const db = admin.database();
+  const melding = {
+    type,
+    location,
+    playerName,
+    timestamp: Date.now(),
+    status: 'new',
+  };
 
-export default async function handler(req, res) {
-  if (req.method === 'POST') {
-    const { serverId, type, location, playerName } = req.body;
-
-    if (!serverId || !type || !location || !playerName) {
-      return res.status(400).json({ message: 'Fout: ongeldige melding of geen serverId' });
-    }
-
-    const melding = {
-      type,
-      location,
-      playerName,
-      timestamp: Date.now(),
-      status: 'new',
-    };
-
-    try {
-      await db.ref(`servers/${serverId}/meldingen`).push(melding);
-      res.status(201).json({ message: '✅ Melding ontvangen en opgeslagen', data: melding });
-    } catch (error) {
+  const ref = db.ref(`servers/${serverId}/meldingen`);
+  ref.push(melding)
+    .then(() => res.status(201).json({ message: '✅ Melding ontvangen en opgeslagen', data: melding }))
+    .catch(error => {
       console.error('Fout bij opslaan melding:', error);
       res.status(500).json({ message: 'Fout bij opslaan melding' });
-    }
-  } else if (req.method === 'GET') {
-    const serverId = req.query.serverId;
+    });
+});
 
-    if (!serverId) {
-      return res.status(400).json({ message: 'serverId is verplicht' });
-    }
+// GET: alle meldingen ophalen
+router.get('/', (req, res) => {
+  const serverId = req.query.serverId;
+  if (!serverId) {
+    return res.status(400).json({ message: 'serverId is verplicht' });
+  }
 
-    try {
-      const snapshot = await db.ref(`servers/${serverId}/meldingen`).once('value');
+  const ref = db.ref(`servers/${serverId}/meldingen`);
+  ref.once('value')
+    .then(snapshot => {
       const data = snapshot.val() || {};
       const meldingen = Object.values(data);
-      res.status(200).json(meldingen);
-    } catch (error) {
+      res.json(meldingen);
+    })
+    .catch(error => {
       console.error('Fout bij ophalen meldingen:', error);
       res.status(500).json({ message: 'Fout bij ophalen meldingen' });
-    }
-  } else {
-    res.status(405).json({ message: 'Method not allowed' });
+    });
+});
+
+// PATCH: status update
+router.patch('/:meldingId/status', async (req, res) => {
+  const { meldingId } = req.params;
+  const { status } = req.body;
+  const serverId = req.query.serverId;
+
+  if (!["new", "accepted", "assigned", "closed"].includes(status)) {
+    return res.status(400).json({ message: 'Ongeldige status' });
   }
-}
+  if (!serverId) {
+    return res.status(400).json({ message: 'serverId is verplicht' });
+  }
+
+  try {
+    const ref = db.ref(`servers/${serverId}/meldingen/${meldingId}`);
+    const snapshot = await ref.once('value');
+    if (!snapshot.exists()) {
+      return res.status(404).json({ message: 'Melding niet gevonden' });
+    }
+    await ref.update({ status });
+    const updated = await ref.once('value');
+    res.json({ message: 'Status bijgewerkt', melding: updated.val() });
+  } catch (error) {
+    console.error('Fout bij updaten status melding:', error);
+    res.status(500).json({ message: 'Fout bij updaten status' });
+  }
+});
+
+module.exports = router;
