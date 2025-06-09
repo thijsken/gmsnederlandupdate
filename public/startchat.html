@@ -218,21 +218,26 @@
   <section id="start-screen">
     <label for="customer-name" class="visually-hidden">Jouw naam</label>
     <input type="text" id="customer-name" placeholder="Voer je naam in..." autocomplete="off" aria-required="true" />
+      <label for="question-type">Selecteer type vraag:</label>
+      <select id="question-type" required aria-required="true">
+        <option value="" disabled selected>Maak een keuze</option>
+        <option value="Order">Order</option>
+        <option value="Verzending">Verzending</option>
+        <option value="Factuur">Factuur</option>
+        <option value="Technisch">Technisch</option>
+        <option value="Overig">Overig</option>
+      </select>
     <button id="start-chat" disabled aria-disabled="true" aria-label="Start de chat">Start chat</button>
   </section>
 
-  <select id="question-type" aria-label="Kies je vraagsoort" required style="padding:16px 20px; font-size:1rem; border:2px solid #ccc; border-radius:16px; transition: border-color 0.25s ease;">
-  <option value="" disabled selected>-- Kies je vraag --</option>
-  <option value="support_met_GMS_samenwerking">Support met GMS samenwerking</option>
-  <option value="klachten_mod">Klachten / Mod</option>
-  <option value="anders">Anders</option>
-</select>
-
   <section id="chat-container" aria-live="polite" aria-relevant="additions" aria-atomic="false">
     <div id="messages" role="log" aria-live="polite" aria-atomic="false"></div>
+
+      <div id="typing-indicator" aria-live="assertive" aria-atomic="true" style="display:none;">De medewerker is aan het typen...</div>
+
     <form id="input-area" onsubmit="return false;">
       <label for="msg-input" class="visually-hidden">Typ je bericht</label>
-      <input type="text" id="msg-input" placeholder="Typ je bericht..." autocomplete="off" aria-label="Typ je bericht" />
+      <input type="text" id="msg-input" autocomplete="off" placeholder="Typ uw bericht..." aria-label="Typ uw bericht" required />
       <button id="send-btn" disabled aria-disabled="true" aria-label="Verstuur bericht">Verstuur</button>
     </form>
   </section>
@@ -513,7 +518,7 @@ function isChatOpen() {
 
   // Chat open van 09:00 tot 20:00
   const openHour = 9;
-  const closeHour = 20;
+  const closeHour = 8;
 
   // Return true als tijd binnen open venster valt
   return hour >= openHour && hour < closeHour;
