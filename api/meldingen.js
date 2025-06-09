@@ -34,6 +34,22 @@ export default async function handler(req, res) {
       console.error('Fout bij opslaan melding:', error);
       res.status(500).json({ message: 'Fout bij opslaan melding' });
     }
+  } else if (req.method === 'GET') {
+    const serverId = req.query.serverId;
+
+    if (!serverId) {
+      return res.status(400).json({ message: 'serverId is verplicht' });
+    }
+
+    try {
+      const snapshot = await db.ref(`servers/${serverId}/meldingen`).once('value');
+      const data = snapshot.val() || {};
+      const meldingen = Object.values(data);
+      res.status(200).json(meldingen);
+    } catch (error) {
+      console.error('Fout bij ophalen meldingen:', error);
+      res.status(500).json({ message: 'Fout bij ophalen meldingen' });
+    }
   } else {
     res.status(405).json({ message: 'Method not allowed' });
   }
