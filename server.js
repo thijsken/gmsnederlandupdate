@@ -4,6 +4,7 @@ const path = require('path');
 
 const meldingenRoutes = require('./api/meldingen');
 const unitsRoutes = require('./api/units');
+const luchtalarmRoutes = require('./api/luchtalarm/palen');
 // ... importeer hier meer routes
 
 const app = express();
@@ -21,6 +22,7 @@ app.get('/', (req, res) => {
 // Gebruik routers per path
 app.use('/api/meldingen', meldingenRoutes);
 app.use('/api/units', unitsRoutes);
+app.use('/api/luchtalarm/palen.js', luchtalarmRoutes);
 // ... voeg meer routes toe zoals /api/luchtalarm, /api/posten etc
 
 app.listen(PORT, () => {
