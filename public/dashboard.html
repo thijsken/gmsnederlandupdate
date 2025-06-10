@@ -1697,7 +1697,7 @@ function fetchEmergencyReports() {
 
 // Voeg dit toe aan je JS-bestand (na initialisatie van maps)
 function fetchUnits() {
-    fetch(`${API_URL}/api/untis`, {
+    fetch(`${API_URL}/api/units`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -2162,7 +2162,7 @@ fetch(`${API_URL}/api/luchtalarm/palen`)
   })
   .catch(err => console.error("❌ Fout bij ophalen paaldata:", err));
 
-fetch('https://gmsnederland-production.up.railway.app/api/posten')
+  fetch('/api/posten')
   .then(res => res.json())
   .then(posten => {
     posten.forEach(post => {

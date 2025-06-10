@@ -1,6 +1,6 @@
 export default async function handler(req, res) {
   if (req.method === 'GET') {
-    // TODO: haal posten op uit database
+    // TODO: laad paaldata
     return res.status(200).json([]);
   }
 
