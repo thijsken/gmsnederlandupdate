@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
 // 🚀 Ophalen van paaldata uit backend
-fetch('/api/luchtalarm/palen')
+fetch(`${API_URL}/api/luchtalarm/palen`)
     .then(res => res.json())
     .then(palen => {
         if (Array.isArray(palen)) {
