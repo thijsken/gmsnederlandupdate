@@ -1662,37 +1662,41 @@ let vorigeMeldingenTimestamps = [];
 let bekendeMeldingen = new Set();
 
 function fetchEmergencyReports() {
-    const url = `${API_URL}/api/meldingen?serverId=${encodeURIComponent(serverId)}`;
-    console.log("🌐 Ophalen meldingen van:", url);
+  const url = `${API_URL}/api/meldingen?serverId=${encodeURIComponent(serverId)}`;
+  console.log("🌐 Ophalen meldingen van:", url);
 
-    fetch(url)
-        .then(res => {
-            if (!res.ok) {
-                return res.json().then(errData => {
-                    throw new Error(`Server gaf fout: ${res.status} - ${JSON.stringify(errData)}`);
-                });
-            }
-            return res.json();
-        })
-        .then(data => {
-            if (!Array.isArray(data)) {
-                throw new Error("📛 Ongeldig antwoord van server (geen lijst): " + JSON.stringify(data));
-            }
+  fetch(url)
+    .then(async res => {
+      if (!res.ok) {
+        let errData;
+        try {
+          errData = await res.json();
+        } catch {
+          errData = await res.text();
+        }
+        throw new Error(`Server gaf fout: ${res.status} - ${JSON.stringify(errData)}`);
+      }
+      return res.json();
+    })
+    .then(data => {
+      if (!Array.isArray(data)) {
+        throw new Error("📛 Ongeldig antwoord van server (geen lijst): " + JSON.stringify(data));
+      }
 
-            const nieuweMeldingen = data.filter(m =>
-                m.status === 'new' && !bekendeMeldingen.has(m.timestamp)
-            );
+      const nieuweMeldingen = data.filter(m =>
+        m.status === 'new' && !bekendeMeldingen.has(m.timestamp)
+      );
 
-            nieuweMeldingen.forEach(melding => {
-                bekendeMeldingen.add(melding.timestamp);
-                // Voeg je eigen logica hier in (bijv. calls.push, kaarten updaten, enz.)
-                console.log("🚨 Nieuwe melding:", melding);
-            });
-        })
-        .catch(err => {
-            console.error("❌ Fout bij ophalen meldingen:", err.message);
-            showNotification("Fout bij ophalen meldingen: " + err.message, "error");
-        });
+      nieuweMeldingen.forEach(melding => {
+        bekendeMeldingen.add(melding.timestamp);
+        console.log("🚨 Nieuwe melding:", melding);
+        // Hier je eigen update logica
+      });
+    })
+    .catch(err => {
+      console.error("❌ Fout bij ophalen meldingen:", err.message);
+      showNotification("Fout bij ophalen meldingen: " + err.message, "error");
+    });
 }
 
 // Voeg dit toe aan je JS-bestand (na initialisatie van maps)
