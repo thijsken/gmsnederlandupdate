@@ -3,7 +3,7 @@
 import { initializeApp, cert } from 'firebase-admin/app';
 import { getDatabase } from 'firebase-admin/database';
 
-const serviceAccount = require('/confige/gmsnederland-3029e-firebase-adminsdk-fbsvc-c900bf64b5.json');
+const serviceAccount = require('./confige/gmsnederland-3029e-firebase-adminsdk-fbsvc-c900bf64b5.json');
 
 // Zorg dat Firebase slechts één keer wordt geïnitialiseerd
 if (!global.firebaseApp) {
