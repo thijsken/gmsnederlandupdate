@@ -2162,7 +2162,7 @@ fetch(`${API_URL}/api/luchtalarm/palen`)
   })
   .catch(err => console.error("❌ Fout bij ophalen paaldata:", err));
 
-  fetch('/api/posten')
+fetch(`${API_URL}/api/posten?serverId=${SERVER_ID}`)
   .then(res => res.json())
   .then(posten => {
     posten.forEach(post => {
