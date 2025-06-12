@@ -1,18 +1,19 @@
-// /api/meldingen.js
-
-import { initializeApp, cert } from 'firebase-admin/app';
+import { initializeApp, cert, getApps } from 'firebase-admin/app';
 import { getDatabase } from 'firebase-admin/database';
 
-const serviceAccount = require('./confige/gmsnederland-3029e-firebase-adminsdk-fbsvc-c900bf64b5.json');
+const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
 
-// Zorg dat Firebase slechts één keer wordt geïnitialiseerd
-if (!global.firebaseApp) {
-  global.firebaseApp = initializeApp({
+let app;
+if (!getApps().length) {
+  app = initializeApp({
     credential: cert(serviceAccount),
     databaseURL: 'https://gmsnederland-3029e-default-rtdb.europe-west1.firebasedatabase.app/'
   });
+} else {
+  app = getApps()[0];
 }
-const db = getDatabase();
+
+const db = getDatabase(app);
 
 export default async function handler(req, res) {
   const { serverId } = req.query;
