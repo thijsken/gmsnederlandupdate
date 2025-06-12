@@ -7,6 +7,7 @@ if (!getApps().length) {
     throw new Error('❌ Missing FIREBASE_SERVICE_ACCOUNT environment variable');
   }
   const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+  serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
 
   app = initializeApp({
     credential: cert(serviceAccount),
@@ -36,8 +37,13 @@ export default async function handler(req, res) {
       }
 
       case 'POST': {
+        // Controleer dat de body al JSON is (Next.js/ Vercel doet dat meestal)
+        if (!req.body) {
+          return res.status(400).json({ error: '❌ Geen body meegegeven' });
+        }
         const melding = req.body;
-        if (!melding || typeof melding !== 'object' || Array.isArray(melding)) {
+
+        if (typeof melding !== 'object' || melding === null || Array.isArray(melding)) {
           return res.status(400).json({ error: '❌ Ongeldige melding in body' });
         }
 
@@ -50,6 +56,6 @@ export default async function handler(req, res) {
     }
   } catch (err) {
     console.error('❌ Fout bij Firebase-opslag:', err);
-    return res.status(500).json({ error: 'Serverfout bij Firebase', details: err.message || err.toString() });
+    return res.status(500).json({ error: 'Serverfout bij Firebase', details: err.message || String(err) });
   }
 }
