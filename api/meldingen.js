@@ -1,7 +1,7 @@
 import { getDatabase } from "firebase-admin/database";
 import { initializeApp, cert } from "firebase-admin/app";
 
-const serviceAccount = require("./confige/gmsnederland-3029e-firebase-adminsdk-fbsvc-c900bf64b5.json"); // je Firebase key
+const serviceAccount = require("/confige/gmsnederland-3029e-firebase-adminsdk-fbsvc-c900bf64b5.json"); // je Firebase key
 
 const app = initializeApp({
   credential: cert(serviceAccount),
