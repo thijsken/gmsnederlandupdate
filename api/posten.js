@@ -1,5 +1,17 @@
 let postenOpslag = []; // tijdelijke opslag posten
 
+function deduplicatePosten(posten) {
+  const map = new Map();
+  posten.forEach(post => {
+    // Gebruik post.id als key, of anders post.name
+    const key = post.id || post.name;
+    if (key) {
+      map.set(key, post); // overschrijft dubbele
+    }
+  });
+  return Array.from(map.values());
+}
+
 export default async function handler(req, res) {
   if (req.method === 'GET') {
     return res.status(200).json(postenOpslag);
@@ -14,6 +26,7 @@ export default async function handler(req, res) {
     }
 
     postenOpslag = postenOpslag.concat(body);
+    postenOpslag = deduplicatePosten(postenOpslag);
 
     return res.status(200).json({ message: 'Posten ontvangen', totaal: postenOpslag.length });
   }
