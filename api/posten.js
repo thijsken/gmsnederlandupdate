@@ -1,18 +1,17 @@
 export default async function handler(req, res) {
-  const { serverId } = req.query; // ✅ haalt ?serverId=... uit de URL
+  const { serverId } = req.query;
+
+  if (req.method === 'GET') {
+    // Return posten data filtered by serverId if given
+    const posten = await getPostenFromDatabase(serverId); // implement this
+    return res.status(200).json(posten);
+  }
 
   if (req.method === 'POST') {
-    const data = req.body;
-
-    if (!serverId) {
-      return res.status(400).json({ error: "serverId ontbreekt" });
-    }
-
-    // TODO: verwerk en sla op in database
-    console.log("Data van server:", serverId);
-    console.log("Inhoud:", data);
-
-    return res.status(200).json({ success: true });
+    // Save posten data (check auth, validate, etc)
+    const postenData = req.body;
+    await savePostenToDatabase(serverId, postenData); // implement this
+    return res.status(200).json({ message: "Posten opgeslagen" });
   }
 
   res.status(405).json({ error: 'Method not allowed' });
