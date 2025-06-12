@@ -1667,16 +1667,18 @@ function fetchEmergencyReports() {
 
   fetch(url)
     .then(async res => {
-      if (!res.ok) {
-        let errData;
-        try {
-          errData = await res.json();
-        } catch {
-          errData = await res.text();
-        }
-        throw new Error(`Server gaf fout: ${res.status} - ${JSON.stringify(errData)}`);
+      let data;
+      try {
+        data = await res.clone().json(); // clone voor mogelijke fallback
+      } catch {
+        data = await res.text();
       }
-      return res.json();
+
+      if (!res.ok) {
+        throw new Error(`Server gaf fout: ${res.status} - ${JSON.stringify(data)}`);
+      }
+
+      return data;
     })
     .then(data => {
       if (!Array.isArray(data)) {
