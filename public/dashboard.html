@@ -2149,7 +2149,7 @@ function triggerLuchtalarm(actie, id) {
 
 
 // 🚀 Ophalen van paaldata uit backend
-fetch(`${API_URL}/api/luchtalarm/palen`)
+fetch(`${API_URL}/api/luchtalarm/palen?serverId=${serverId}`)
   .then(res => res.json())
   .then(palen => {
     console.log("✅ Ontvangen paaldata:", palen);
