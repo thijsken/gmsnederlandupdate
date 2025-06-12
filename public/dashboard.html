@@ -2149,7 +2149,7 @@ function triggerLuchtalarm(actie, id) {
 
 
 // 🚀 Ophalen van paaldata uit backend
-fetch(`${API_URL}/api/luchtalarm/palen?serverId=${serverId}`)
+fetch(`${API_URL}/api/luchtalarm/palen`)
   .then(res => res.json())
   .then(palen => {
     console.log("✅ Ontvangen paaldata:", palen);
@@ -2162,7 +2162,7 @@ fetch(`${API_URL}/api/luchtalarm/palen?serverId=${serverId}`)
   })
   .catch(err => console.error("❌ Fout bij ophalen paaldata:", err));
 
-fetch(`/api/posten?serverId=${serverId}`)
+  fetch('/api/posten')
   .then(res => res.json())
   .then(posten => {
     posten.forEach(post => {
