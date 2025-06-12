@@ -1,5 +1,7 @@
 import { initializeApp, cert, getApps } from 'firebase-admin/app';
 import { getDatabase } from 'firebase-admin/database';
+console.log('ENV FIREBASE_SERVICE_ACCOUNT:', process.env.FIREBASE_SERVICE_ACCOUNT ? 'Loaded' : 'Missing');
+
 
 let app;
 if (!getApps().length) {
