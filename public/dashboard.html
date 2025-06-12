@@ -750,7 +750,7 @@ function laadPostenVoorP2000() {
 
   select.innerHTML = '<option value="">-- Kies een post --</option>';
 
-    fetch(`${API_URL}/api/meldingen`)
+  fetch(`${API_URL}/api/posten`)  // LET OP: hier api/posten i.p.v. api/meldingen
     .then(res => {
       if (!res.ok) throw new Error(`Fout bij ophalen posten: ${res.status} ${res.statusText}`);
       return res.json();
@@ -778,6 +778,7 @@ function laadPostenVoorP2000() {
       showNotification("Fout bij laden van posten", "error");
     });
 }
+
 
 function genereerP2000Code(beschrijving) {
   const tekst = beschrijving.toLowerCase();
