@@ -9,7 +9,7 @@ const serviceAccount = require('/confige/gmsnederland-3029e-firebase-adminsdk-fb
 if (!global.firebaseApp) {
   global.firebaseApp = initializeApp({
     credential: cert(serviceAccount),
-    databaseURL: 'https://gmsnederland-3029e-default-rtdb.europe-west1.firebasedatabase.app'
+    databaseURL: 'https://gmsnederland-3029e-default-rtdb.europe-west1.firebasedatabase.app/'
   });
 }
 const db = getDatabase();
