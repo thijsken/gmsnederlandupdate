@@ -1,27 +1,14 @@
-import fs from 'fs/promises';
-import path from 'path';
+import admin from 'firebase-admin';
 
-const DATA_DIR = path.resolve('./data');
-const DATA_FILE = path.resolve(DATA_DIR, 'meldingen.json');
+if (!admin.apps.length) {
+  const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT || '{}');
 
-async function readData() {
-  try {
-    const raw = await fs.readFile(DATA_FILE, 'utf8');
-    return JSON.parse(raw);
-  } catch (err) {
-    return {};
-  }
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+  });
 }
 
-async function writeData(data) {
-  try {
-    await fs.mkdir(DATA_DIR, { recursive: true });
-    await fs.writeFile(DATA_FILE, JSON.stringify(data, null, 2));
-  } catch (err) {
-    console.error('Fout bij schrijven data:', err);
-    throw err;
-  }
-}
+const db = admin.firestore();
 
 export default async function handler(req, res) {
   const { serverId } = req.query;
@@ -29,28 +16,33 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'serverId ontbreekt' });
   }
 
-  const data = await readData();
-
-  switch (req.method) {
-    case 'GET':
-      return res.status(200).json(data[serverId] || []);
-
-    case 'POST':
+  if (req.method === 'POST') {
+    try {
       const melding = req.body;
-      if (!data[serverId]) {
-        data[serverId] = [];
-      }
-      data[serverId].push(melding);
 
-      try {
-        await writeData(data);
-      } catch (err) {
-        return res.status(500).json({ error: 'Kon melding niet opslaan' });
-      }
+      // Voeg timestamp toe als die er nog niet is
+      if (!melding.timestamp) melding.timestamp = Date.now();
 
-      return res.status(201).json({ message: 'Melding opgeslagen', data: melding });
+      // Voeg document toe aan Firestore collectie servers/{serverId}/Meldingen
+      const docRef = await db.collection('servers').doc(serverId).collection('Meldingen').add(melding);
 
-    default:
-      return res.status(405).json({ error: 'Method not allowed' });
+      return res.status(201).json({ message: 'Melding opgeslagen', id: docRef.id });
+    } catch (error) {
+      console.error('Fout bij opslaan melding:', error);
+      return res.status(500).json({ error: 'Kon melding niet opslaan' });
+    }
+  } else if (req.method === 'GET') {
+    try {
+      const snapshot = await db.collection('servers').doc(serverId).collection('Meldingen').orderBy('timestamp', 'desc').get();
+
+      const meldingen = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+      return res.status(200).json(meldingen);
+    } catch (error) {
+      console.error('Fout bij ophalen meldingen:', error);
+      return res.status(500).json({ error: 'Kon meldingen niet ophalen' });
+    }
+  } else {
+    return res.status(405).json({ error: 'Method not allowed' });
   }
 }
