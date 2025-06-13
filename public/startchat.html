@@ -257,50 +257,47 @@
   const db = getFirestore(app);
 
   const customerNameInput = document.getElementById('customer-name');
+  const questionTypeSelect = document.getElementById('question-type');  // Correcte naam van dropdown
   const startChatBtn = document.getElementById('start-chat');
   const chatContainer = document.getElementById('chat-container');
   const startScreen = document.getElementById('start-screen');
   const messagesDiv = document.getElementById('messages');
   const msgInput = document.getElementById('msg-input');
   const sendBtn = document.getElementById('send-btn');
-  const questionTypeSelect = document.getElementById('question-type');
+  const typingIndicator = document.getElementById('typing-indicator');
 
   let currentChatId = null;
   let unsubscribeMessages = null;
   let unsubscribeChatStatus = null;
-  let customerName = '';
 
-  function validateStartInputs() {
-  const validName = customerNameInput.value.trim().length > 0;
-  const validTopic = customerTopicSelect.value !== '';
-  startChatBtn.disabled = !(validName && validTopic) || currentChatId !== null;
-  startChatBtn.setAttribute('aria-disabled', String(startChatBtn.disabled));
-}
+  // Validatie startknop: naam én vraagtype moeten ingevuld zijn
+  function validateStart() {
+    const validName = customerNameInput.value.trim().length > 0;
+    const validQuestion = questionTypeSelect.value !== "";
+    startChatBtn.disabled = !(validName && validQuestion);
+    startChatBtn.setAttribute('aria-disabled', String(startChatBtn.disabled));
+  }
 
-  // Enable start button only if name entered
-  customerNameInput.addEventListener('input', () => {
-    const valid = customerNameInput.value.trim().length > 0;
-    startChatBtn.disabled = !valid;
-    startChatBtn.setAttribute('aria-disabled', String(!valid));
-  });
+  customerNameInput.addEventListener('input', validateStart);
+  questionTypeSelect.addEventListener('change', validateStart);
 
-  startChatBtn.onclick = async () => {
-    if (unsubscribeMessages) {
-        unsubscribeMessages();
-        unsubscribeMessages = null;
-    }
-    if (unsubscribeChatStatus) {
-        unsubscribeChatStatus();
-        unsubscribeChatStatus = null;
-    }
-    customerName = customerNameInput.value.trim();
-    if (!customerName) return;
+  startChatBtn.addEventListener('click', async () => {
+    if (unsubscribeMessages) unsubscribeMessages();
+    if (unsubscribeChatStatus) unsubscribeChatStatus();
+
+    const customerName = customerNameInput.value.trim();
+    const questionType = questionTypeSelect.value;
+
+    if (!customerName || !questionType) return;
 
     startChatBtn.disabled = true;
     customerNameInput.disabled = true;
+    questionTypeSelect.disabled = true;
 
+    // Chat document aanmaken in Firestore
     const chatDocRef = await addDoc(collection(db, 'chats'), {
       customerName,
+      questionType,
       status: 'open',
       createdAt: serverTimestamp(),
       lastActivity: serverTimestamp(),
@@ -308,102 +305,26 @@
     });
 
     currentChatId = chatDocRef.id;
+
     startScreen.style.display = 'none';
     chatContainer.style.display = 'flex';
     msgInput.focus();
     sendBtn.disabled = true;
     sendBtn.setAttribute('aria-disabled', 'true');
 
-    // Welkomstbericht agent
+    // Welkomstbericht van agent toevoegen
     const messagesRef = collection(db, 'chats', currentChatId, 'messages');
     await addDoc(messagesRef, {
       sender: 'agent',
-      content: `Hallo ${customerName}! Welkom bij GMSNederland. We staan klaar om je te helpen. Stel gerust je vraag!`,
+      content: `Hallo ${customerName}! Welkom bij GMSNederland. We staan klaar om je te helpen. Stel gerust je vraag over ${questionType}.`,
       timestamp: serverTimestamp()
     });
 
     listenForMessages();
     listenForChatStatus();
-    listenForAgentTyping(); // <-- nieuw
-  };
-
-  sendBtn.onclick = sendMessage;
-
-let typingTimeout;
-
-msgInput.addEventListener('input', async () => {
-  const valid = msgInput.value.trim().length > 0;
-  sendBtn.disabled = !valid;
-  sendBtn.setAttribute('aria-disabled', String(!valid));
-
-  if (!currentChatId) return;
-
-  // Zet 'customerTyping' op true
-  await updateDoc(doc(db, 'chats', currentChatId), {
-    customerTyping: true
+    listenForAgentTyping();
   });
 
-  // Reset na 2 seconden inactiviteit
-  clearTimeout(typingTimeout);
-  typingTimeout = setTimeout(async () => {
-    await updateDoc(doc(db, 'chats', currentChatId), {
-      customerTyping: false
-    });
-  }, 2000);
-});
-
-
-msgInput.addEventListener('keypress', e => {
-  if (e.key === 'Enter' && !sendBtn.disabled) {
-    e.preventDefault(); // <-- voeg dit toe
-    sendMessage();
-  }
-});
-
-  // Pas validatie aan: naam en dropdown moeten ingevuld zijn
-function validateStart() {
-  const validName = customerNameInput.value.trim().length > 0;
-  const validQuestion = questionTypeSelect.value !== "";
-  const canStart = validName && validQuestion && isChatOpen();
-  startChatBtn.disabled = !canStart;
-  startChatBtn.setAttribute('aria-disabled', String(!canStart));
-}
-customerNameInput.addEventListener('input', validateStart);
-questionTypeSelect.addEventListener('change', validateStart);
-customerTopicSelect.addEventListener('change', validateStartInputs);
-
-
-// Start chat knop onclick
-  startChatBtn.addEventListener('click', () => {
-    customerName = customerNameInput.value.trim();
-    questionType = questionTypeSelect.value;
-
-    startScreen.style.display = 'none';
-    chatContainer.style.display = 'flex';
-    msgInput.focus();
-    chatStarted = true;
-
-    // Luister realtime naar berichten voor deze klant
-    const messagesRef = collection(db, "chats", customerName, "messages");
-    const q = query(messagesRef, orderBy("timestamp"));
-    unsubscribe = onSnapshot(q, (snapshot) => {
-      messagesEl.innerHTML = ""; // reset berichten
-      let isAgentTyping = false;
-      snapshot.docChanges().forEach(change => {
-        const data = change.doc.data();
-        if (data.type === 'typing' && data.sender === 'agent') {
-          isAgentTyping = true;
-        } else if (data.type === 'message') {
-          addMessage(data.text, data.sender);
-        }
-      });
-      typingIndicator.style.display = isAgentTyping ? 'block' : 'none';
-    });
-
-    // Stuur een welkomstbericht naar de chat (optioneel)
-    addMessage("Welkom bij GMS_Nederland! Hoe kunnen we je helpen?", "agent");
-  });
-  
   async function sendMessage() {
     const text = msgInput.value.trim();
     if (!text || !currentChatId) return;
@@ -425,55 +346,81 @@ customerTopicSelect.addEventListener('change', validateStartInputs);
     sendBtn.setAttribute('aria-disabled', 'true');
   }
 
-function listenForMessages() {
-  // Unsubscribe als er al een listener actief is
-  if (unsubscribeMessages) {
-    unsubscribeMessages();
-  }
+  sendBtn.addEventListener('click', sendMessage);
 
-  const messagesRef = collection(db, 'chats', currentChatId, 'messages');
-  const q = query(messagesRef, orderBy('timestamp'));
+  msgInput.addEventListener('input', async () => {
+    const valid = msgInput.value.trim().length > 0;
+    sendBtn.disabled = !valid;
+    sendBtn.setAttribute('aria-disabled', String(!valid));
 
-  unsubscribeMessages = onSnapshot(q, snapshot => {
-    messagesDiv.innerHTML = '';
-    snapshot.forEach(docSnap => {
-      const msg = docSnap.data();
-      const div = document.createElement('div');
-      div.className = 'message ' + (msg.sender === 'customer' ? 'customer' : 'agent');
+    if (!currentChatId) return;
 
-      const nameDiv = document.createElement('div');
-      nameDiv.style.fontWeight = '700';
-      nameDiv.style.fontSize = '0.85rem';
-      nameDiv.style.marginBottom = '4px'; 
-      nameDiv.style.color = msg.sender == 'customer' ? '#1b5e200' : '#2575fc';
-      nameDiv.textContent = msg.sender == 'customer' ? 'jij' : 'GMS Nederland';
-      div.appendChild(nameDiv);
-
-      const contentSpan = document.createElement('span');
-      contentSpan.textContent = msg.content;
-      div.appendChild(contentSpan);
-
-      if (msg.timestamp && msg.timestamp.toDate) {
-        const time = msg.timestamp.toDate();
-        const hours = time.getHours().toString().padStart(2, '0');
-        const minutes = time.getMinutes().toString().padStart(2, '0');
-        const timeSpan = document.createElement('div');
-        timeSpan.textContent = `${hours}:${minutes}`;
-        timeSpan.style.fontSize = '0.75rem';
-        timeSpan.style.color = '#888';
-        timeSpan.style.marginTop = '4px';
-        div.appendChild(timeSpan);
-      }
-
-      messagesDiv.appendChild(div);
+    // Zet customerTyping in Firestore
+    await updateDoc(doc(db, 'chats', currentChatId), {
+      customerTyping: true
     });
-    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+    clearTimeout(window.typingTimeout);
+    window.typingTimeout = setTimeout(async () => {
+      await updateDoc(doc(db, 'chats', currentChatId), {
+        customerTyping: false
+      });
+    }, 2000);
   });
-}
+
+  msgInput.addEventListener('keypress', e => {
+    if (e.key === 'Enter' && !sendBtn.disabled) {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+
+  function listenForMessages() {
+    if (unsubscribeMessages) unsubscribeMessages();
+
+    const messagesRef = collection(db, 'chats', currentChatId, 'messages');
+    const q = query(messagesRef, orderBy('timestamp'));
+
+    unsubscribeMessages = onSnapshot(q, snapshot => {
+      messagesDiv.innerHTML = '';
+      snapshot.forEach(docSnap => {
+        const msg = docSnap.data();
+        const div = document.createElement('div');
+        div.className = 'message ' + (msg.sender === 'customer' ? 'customer' : 'agent');
+
+        const nameDiv = document.createElement('div');
+        nameDiv.style.fontWeight = '700';
+        nameDiv.style.fontSize = '0.85rem';
+        nameDiv.style.marginBottom = '4px';
+        nameDiv.style.color = msg.sender == 'customer' ? '#1b5e20' : '#2575fc';
+        nameDiv.textContent = msg.sender == 'customer' ? 'jij' : 'GMS Nederland';
+        div.appendChild(nameDiv);
+
+        const contentSpan = document.createElement('span');
+        contentSpan.textContent = msg.content;
+        div.appendChild(contentSpan);
+
+        if (msg.timestamp && msg.timestamp.toDate) {
+          const time = msg.timestamp.toDate();
+          const hours = time.getHours().toString().padStart(2, '0');
+          const minutes = time.getMinutes().toString().padStart(2, '0');
+          const timeSpan = document.createElement('div');
+          timeSpan.textContent = `${hours}:${minutes}`;
+          timeSpan.style.fontSize = '0.75rem';
+          timeSpan.style.color = '#888';
+          timeSpan.style.marginTop = '4px';
+          div.appendChild(timeSpan);
+        }
+
+        messagesDiv.appendChild(div);
+      });
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    });
+  }
 
   function listenForChatStatus() {
     const chatRef = doc(db, 'chats', currentChatId);
-    onSnapshot(chatRef, snapshot => {
+    unsubscribeChatStatus = onSnapshot(chatRef, snapshot => {
       const chatData = snapshot.data();
       if (chatData?.status === 'closed') {
         const closedMsg = document.createElement('div');
@@ -488,84 +435,61 @@ function listenForMessages() {
   }
 
   function listenForAgentTyping() {
-  const chatRef = doc(db, 'chats', currentChatId);
-  unsubscribeChatStatus = onSnapshot(chatRef, snapshot => {
-    const data = snapshot.data();
-    const typingIndicator = document.getElementById('typing-indicator');
-    if (data?.isTyping) {
-      typingIndicator.style.display = 'block';
+    const chatRef = doc(db, 'chats', currentChatId);
+    onSnapshot(chatRef, snapshot => {
+      const data = snapshot.data();
+      if (data?.agentTyping) {
+        typingIndicator.style.display = 'block';
+      } else {
+        typingIndicator.style.display = 'none';
+      }
+    });
+  }
+
+  // Chat beschikbaarheid functie (optioneel, kan je nog verbeteren)
+  function isChatOpen() {
+    const now = new Date();
+    const timeZone = 'Europe/Amsterdam';
+    const options = { timeZone, hour12: false, hour: '2-digit', minute: '2-digit' };
+    const timeParts = new Intl.DateTimeFormat('nl-NL', options).formatToParts(now);
+    let hour = 0;
+    for (const part of timeParts) {
+      if (part.type === 'hour') hour = parseInt(part.value, 10);
+    }
+    return hour >= 9 && hour < 20;
+  }
+
+  function updateChatAvailability() {
+    const chatOpen = isChatOpen();
+
+    if (chatOpen) {
+      startChatBtn.disabled = !(customerNameInput.value.trim().length > 0 && questionTypeSelect.value !== '');
+      startChatBtn.setAttribute('aria-disabled', String(startChatBtn.disabled));
+      customerNameInput.disabled = false;
+      questionTypeSelect.disabled = false;
+      document.querySelector('.closed-message')?.remove();
     } else {
-      typingIndicator.style.display = 'none';
-    }
-  });
-}
+      startChatBtn.disabled = true;
+      startChatBtn.setAttribute('aria-disabled', 'true');
+      customerNameInput.disabled = true;
+      questionTypeSelect.disabled = true;
 
-function isChatOpen() {
-  // Nederlandse tijd (Amsterdam) in UTC+1 of UTC+2 afhankelijk van zomer-/wintertijd
-  const now = new Date();
-
-  // Tijdzone offset in minuten van UTC voor Amsterdam (NL)
-  // Houd rekening met zomer-/wintertijd automatisch met Intl API
-  const timeZone = 'Europe/Amsterdam';
-  const options = { timeZone, hour12: false, hour: '2-digit', minute: '2-digit' };
-  const timeParts = new Intl.DateTimeFormat('nl-NL', options).formatToParts(now);
-  let hour = 0;
-  let minute = 0;
-  for (const part of timeParts) {
-    if (part.type === 'hour') hour = parseInt(part.value, 10);
-    if (part.type === 'minute') minute = parseInt(part.value, 10);
-  }
-
-  // Chat open van 09:00 tot 20:00
-  const openHour = 9;
-  const closeHour = 8;
-
-  // Return true als tijd binnen open venster valt
-  return hour >= openHour && hour < closeHour;
-}
-
-function updateChatAvailability() {
-  const chatOpen = isChatOpen();
-
-  if (chatOpen) {
-    startChatBtn.disabled = customerNameInput.value.trim().length === 0;
-    startChatBtn.setAttribute('aria-disabled', String(startChatBtn.disabled));
-    customerNameInput.disabled = false;
-    document.getElementById('start-screen').querySelector('.closed-message')?.remove();
-  } else {
-    // Chat is gesloten: disable input en toon melding
-    startChatBtn.disabled = true;
-    startChatBtn.setAttribute('aria-disabled', 'true');
-    customerNameInput.disabled = true;
-
-    if (!document.querySelector('.closed-message')) {
-      const msg = document.createElement('div');
-      msg.className = 'closed-message';
-      msg.style.color = '#004aad';
-      msg.style.padding = '20px';
-      msg.style.fontWeight = '600';
-      msg.style.textAlign = 'center';
-      msg.textContent = 'Onze livechat is op dit moment gesloten en gaat weer open om 09:00 uur. Heeft u een spoedvraag? Stuur dan gerust een e-mail naar gmsnederlandsupport@gmail.com. Wij doen ons uiterste best om binnen 48 uur te reageren, met uitzondering van het weekend.';
-      const startScreen = document.getElementById('start-screen');
-      startScreen.appendChild(msg);
+      if (!document.querySelector('.closed-message')) {
+        const msg = document.createElement('div');
+        msg.className = 'closed-message';
+        msg.style.color = '#004aad';
+        msg.style.padding = '20px';
+        msg.style.fontWeight = '600';
+        msg.style.textAlign = 'center';
+        msg.textContent = 'Onze livechat is op dit moment gesloten en gaat weer open om 09:00 uur. Heeft u een spoedvraag? Stuur dan gerust een e-mail naar gmsnederlandsupport@gmail.com. Wij doen ons uiterste best om binnen 48 uur te reageren, met uitzondering van het weekend.';
+        startScreen.appendChild(msg);
+      }
     }
   }
-}
 
-// Check chat beschikbaarheid direct bij laden en elke minuut opnieuw
-updateChatAvailability();
-setInterval(updateChatAvailability, 60 * 1000);
-
-// Ook controleren bij input, alleen als chat open is
-customerNameInput.addEventListener('input', () => {
-  if (isChatOpen()) {
-    const valid = customerNameInput.value.trim().length > 0;
-    startChatBtn.disabled = !valid;
-    startChatBtn.setAttribute('aria-disabled', String(!valid));
-  }
-});
-
-
+  // Check beschikbaarheid bij laden en elke minuut
+  updateChatAvailability();
+  setInterval(updateChatAvailability, 60000);
 </script>
 
 <!-- Visually hidden label helper for accessibility -->
