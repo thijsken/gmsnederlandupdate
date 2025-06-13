@@ -27,6 +27,7 @@ app.use('/api/units', unitsRoutes);
 app.use('/api/luchtalarm/palen', luchtalarmRoutes);
 app.use('/api/posten', postenRoutes);
 app.use('/api/luchtalarm/luchtalarm.js', luchtalarmactie);
+app.use('/api/posten/alarm.js', postalarmactie);
 
 app.listen(PORT, () => {
   console.log(`🚀 Server draait op http://localhost:${PORT}`);
