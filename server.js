@@ -8,6 +8,7 @@ const luchtalarmRoutes = require('./api/luchtalarm/palen');
 const postenRoutes = require('./api/posten');
 const luchtalarmactie = require('./api/luchtalarm/luchtalarm');
 const postalarmactie = require('./api/posten')
+const nlalertactie = require('./api/nlalert')
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -28,6 +29,7 @@ app.use('/api/luchtalarm/palen', luchtalarmRoutes);
 app.use('/api/posten', postenRoutes);
 app.use('/api/luchtalarm/luchtalarm.js', luchtalarmactie);
 app.use('/api/posten/alarm.js', postalarmactie);
+app.use('/api/nlalert.js', nlalertactie);
 
 app.listen(PORT, () => {
   console.log(`🚀 Server draait op http://localhost:${PORT}`);
