@@ -7,6 +7,7 @@ const unitsRoutes = require('./api/units');
 const luchtalarmRoutes = require('./api/luchtalarm/palen');
 const postenRoutes = require('./api/posten');
 const luchtalarmactie = require('./api/luchtalarm/luchtalarm');
+const postalarmactie = require('./api/posten')
 
 const app = express();
 const PORT = process.env.PORT || 3000;
