@@ -1,31 +1,27 @@
-// 📦 Tijdelijke opslag (kan later vervangen worden door een database)
-const amberAlerts = [];
+let amberAlerts = [];
 
-// ✅ Amber Alert opslaan
-app.post('/api/amber', (req, res) => {
-  const { name, userId, location, description, timestamp } = req.body;
+export default function handler(req, res) {
+  if (req.method === 'POST') {
+    const { name, userId, location, description, timestamp } = req.body;
 
-  // Validatie
-  if (!name || !userId || !location || !description || !timestamp) {
-    return res.status(400).json({ error: "Ontbrekende velden in verzoek." });
+    if (!name || !userId || !location || !description || !timestamp) {
+      return res.status(400).json({ error: "Ontbrekende velden in verzoek." });
+    }
+
+    // Bewaar timestamp als string (zoals ISO date string)
+    const alert = { name, userId, location, description, timestamp };
+
+    amberAlerts.push(alert);
+    console.log("✅ Amber Alert opgeslagen:", alert);
+
+    return res.status(201).json({ message: "Amber Alert succesvol opgeslagen", alert });
   }
 
-  const alert = {
-    name,
-    userId,
-    location,
-    description,
-    timestamp: Number(timestamp)
-  };
+  if (req.method === 'GET') {
+    // Haal alle amber alerts op
+    return res.status(200).json(amberAlerts);
+  }
 
-  amberAlerts.push(alert);
-  console.log("✅ Amber Alert opgeslagen:", alert);
-
-  res.status(201).json({ message: "Amber Alert succesvol opgeslagen", alert });
-});
-
-// ✅ Alle Amber Alerts ophalen
-app.get('/api/amber', (req, res) => {
-  // Optioneel: alleen de laatste 10 of alerts van afgelopen uur?
-  res.status(200).json(amberAlerts);
-});
+  res.setHeader('Allow', ['GET', 'POST']);
+  res.status(405).json({ error: `Method ${req.method} niet toegestaan` });
+}
