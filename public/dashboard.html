@@ -917,27 +917,21 @@ function saveAmberAlert() {
   }
 
   const alert = { name, userId, location, description, timestamp };
-  amberAlerts.push(alert);
-  updateAmberTable();
-  closeAmberModal();
 
-  // Verstuur naar backend
-  fetch('https://gmsnederland-production.up.railway.app/api/amber', {
+  fetch(`${API_URL}/api/amber`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(alert)
   })
-  .then(res => {
-    if (!res.ok) throw new Error("Fout bij opslaan");
-    return res.json();
-  })
+  .then(res => res.json())
   .then(data => {
     showNotification("📢 Amber Alert succesvol verstuurd!", "success");
+    closeAmberModal();
+    amberAlerts.push(alert);
+    updateAmberTable();
   })
   .catch(err => {
-    console.error("❌ Fout bij versturen:", err);
+    console.error("❌ Fout bij versturen Amber Alert:", err);
     showNotification("Fout bij opslaan in backend", "error");
   });
 }
