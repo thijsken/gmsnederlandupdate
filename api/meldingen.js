@@ -1,4 +1,5 @@
 // /pages/api/meldingen.js
+
 import fs from 'fs';
 import path from 'path';
 
@@ -9,16 +10,12 @@ function readData() {
     const raw = fs.readFileSync(DATA_FILE, 'utf8');
     return JSON.parse(raw);
   } catch (err) {
-    return {}; // Geen bestand of corrupte inhoud
+    return {}; // Geen bestand of corrupte inhoud? Start leeg
   }
 }
 
 function writeData(data) {
-  try {
-    fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
-  } catch (err) {
-    console.error("❌ Fout bij schrijven:", err);
-  }
+  fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
 }
 
 export default function handler(req, res) {
@@ -32,18 +29,10 @@ export default function handler(req, res) {
 
   switch (req.method) {
     case 'GET':
-      return res.status(200).json({
-        serverId,
-        count: (data[serverId] || []).length,
-        meldingen: data[serverId] || []
-      });
+      return res.status(200).json(data[serverId] || []);
 
     case 'POST':
       const melding = req.body;
-
-      if (!melding || typeof melding !== 'object' || !melding.timestamp) {
-        return res.status(400).json({ error: 'Ongeldige melding ontvangen' });
-      }
 
       if (!data[serverId]) {
         data[serverId] = [];
