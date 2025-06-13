@@ -1,42 +1,49 @@
-import admin from 'firebase-admin';
+// /pages/api/meldingen.js
 
-const serviceAccountJson = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
-console.log(process.env.FIREBASE_SERVICE_ACCOUNT);
-serviceAccountJson.private_key = serviceAccountJson.private_key.replace(/\\n/g, '\n');
+import fs from 'fs';
+import path from 'path';
 
-if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccountJson),
-  });
+const DATA_FILE = path.resolve('./data/meldingen.json');
+
+function readData() {
+  try {
+    const raw = fs.readFileSync(DATA_FILE, 'utf8');
+    return JSON.parse(raw);
+  } catch (err) {
+    return {}; // Geen bestand of corrupte inhoud? Start leeg
+  }
 }
 
-const db = admin.firestore();
+function writeData(data) {
+  fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
+}
 
-export default async function handler(req, res) {
-  try {
-    const { serverId } = req.query;
-    if (!serverId) {
-      return res.status(400).json({ error: 'serverId ontbreekt' });
-    }
+export default function handler(req, res) {
+  const { serverId } = req.query;
 
-    const db = admin.firestore();
+  if (!serverId) {
+    return res.status(400).json({ error: 'serverId ontbreekt' });
+  }
 
-    if (req.method === 'POST') {
+  const data = readData();
+
+  switch (req.method) {
+    case 'GET':
+      return res.status(200).json(data[serverId] || []);
+
+    case 'POST':
       const melding = req.body;
-      if (!melding.timestamp) melding.timestamp = Date.now();
 
-      const docRef = await db.collection('servers').doc(serverId).collection('Meldingen').add(melding);
-      return res.status(201).json({ message: 'Melding opgeslagen', id: docRef.id });
+      if (!data[serverId]) {
+        data[serverId] = [];
+      }
 
-    } else if (req.method === 'GET') {
-      const snapshot = await db.collection('servers').doc(serverId).collection('Meldingen').orderBy('timestamp', 'desc').get();
-      const meldingen = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      return res.status(200).json(meldingen);
-    } else {
+      data[serverId].push(melding);
+      writeData(data);
+
+      return res.status(201).json({ message: 'Melding opgeslagen', data: melding });
+
+    default:
       return res.status(405).json({ error: 'Method not allowed' });
-    }
-  } catch (error) {
-    console.error("API handler error:", error);
-    return res.status(500).json({ error: 'Er is een server fout opgetreden' });
   }
 }
