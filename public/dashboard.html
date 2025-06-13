@@ -1154,28 +1154,45 @@ function uploadMapImage() {
             showNotification('Nieuwe API-sleutel gegenereerd!');
         }
         
-      function testConnection() {
-          fetch('https://gmsnederland-production.up.railway.app/', {
-              headers: {
-                  'Authorization': `Bearer ${currentApiKey}`
-              }
-          })
-          .then(response => {
-              if (response.ok) {
-                  showNotification('Verbinding succesvol!', 'success');
-                  document.getElementById('connectionStatus').classList.remove('bg-red-500');
-                  document.getElementById('connectionStatus').classList.add('bg-green-500');
-              } else {
-                  throw new Error('Verbindingsfout');
-              }
-          })
-          .catch(error => {
-              console.error("❌ Fout bij ophalen meldingen:", error);
-              showNotification('Verbindingsfout!', 'error');
-              document.getElementById('connectionStatus').classList.remove('bg-green-500');
-              document.getElementById('connectionStatus').classList.add('bg-red-500');
-          });
-      }
+        async function testConnection() {
+        const statusEl = document.getElementById('connectionStatus');
+        const endpoints = [
+            '/',
+            '/api/amber',
+            '/api/nlalert',
+            '/api/meldingen?serverId=test'
+        ];
+
+        let allOk = true;
+
+        for (const endpoint of endpoints) {
+            try {
+            const res = await fetch(`${API_URL}${endpoint}`, {
+                headers: {
+                'Authorization': `Bearer ${currentApiKey}`
+                }
+            });
+
+            if (!res.ok) {
+                throw new Error(`❌ ${endpoint} gaf status ${res.status}`);
+            }
+            } catch (err) {
+            console.error(`Fout bij endpoint ${endpoint}:`, err.message);
+            showNotification(`Fout bij ${endpoint}: ${err.message}`, 'error');
+            allOk = false;
+            }
+        }
+
+        if (allOk) {
+            showNotification('✅ Alle API-endpoints zijn bereikbaar!', 'success');
+            statusEl.classList.remove('bg-red-500');
+            statusEl.classList.add('bg-green-500');
+        } else {
+            showNotification('❌ Sommige API-endpoints zijn niet bereikbaar!', 'error');
+            statusEl.classList.remove('bg-green-500');
+            statusEl.classList.add('bg-red-500');
+        }
+        }
 
         function saveNewUnit() {
             const unitType = document.getElementById('unitType').value;
