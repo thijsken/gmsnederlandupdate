@@ -324,7 +324,11 @@ function loadChats() {
           const li = createChatListItem(change.doc.id, chat);
           chatListEl.insertBefore(li, chatListEl.firstChild);
           highlightNewChat(li);
-          newChatSound.play().catch(e => console.log("Audio play prevented:", e));
+          if (newChatSound) {
+            newChatSound.play().catch(e => console.log("Audio play prevented:", e));
+          } else {
+            console.warn("new-chat-sound element niet gevonden");
+          }
           toonNotificatie("Nieuwe chat", `${chat.customerName || "Anonieme klant"} heeft een chat gestart.`);
         }
       }
@@ -595,7 +599,11 @@ processChatBtn.addEventListener('click', async () => {
     // Speel geluid en toon notificatie alleen als chat geclaimd is en bericht van klant is
     if (msg.sender == 'customer' && isChatClaimedByAgent) {
       const newMessageSound = document.getElementById('new-message-sound');
-      newMessageSound.play().catch(e => console.log("Audio play prevented:", e));
+      if (newMessageSound) {
+        newMessageSound.play().catch(e => console.log("Audio play prevented:", e));
+      } else {
+        console.warn("new-message-sound element niet gevonden");
+      }
       toonNotificatie(currentCustomerName || "Nieuwe klant", msg.content);
       }
     });
