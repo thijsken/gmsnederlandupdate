@@ -6,7 +6,7 @@ const router = express.Router();
 
 // Zorg dat Firebase niet dubbel geïnitialiseerd wordt
 if (!admin.apps.length) {
-  const serviceAccount = require('../public/serviceAccountKey.json');
+  const serviceAccount = require('/confige/gmsnederland-3029e-firebase-adminsdk-fbsvc-07d1363cba.json');
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
     databaseURL: 'https://gmsnederland-3029e-default-rtdb.europe-west1.firebasedatabase.app'
