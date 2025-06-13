@@ -11,38 +11,30 @@ if (!admin.apps.length) {
 const db = admin.firestore();
 
 export default async function handler(req, res) {
-  const { serverId } = req.query;
-  if (!serverId) {
-    return res.status(400).json({ error: 'serverId ontbreekt' });
-  }
+  try {
+    const { serverId } = req.query;
+    if (!serverId) {
+      return res.status(400).json({ error: 'serverId ontbreekt' });
+    }
 
-  if (req.method === 'POST') {
-    try {
+    const db = admin.firestore();
+
+    if (req.method === 'POST') {
       const melding = req.body;
-
-      // Voeg timestamp toe als die er nog niet is
       if (!melding.timestamp) melding.timestamp = Date.now();
 
-      // Voeg document toe aan Firestore collectie servers/{serverId}/Meldingen
       const docRef = await db.collection('servers').doc(serverId).collection('Meldingen').add(melding);
-
       return res.status(201).json({ message: 'Melding opgeslagen', id: docRef.id });
-    } catch (error) {
-      console.error('Fout bij opslaan melding:', error);
-      return res.status(500).json({ error: 'Kon melding niet opslaan' });
-    }
-  } else if (req.method === 'GET') {
-    try {
+
+    } else if (req.method === 'GET') {
       const snapshot = await db.collection('servers').doc(serverId).collection('Meldingen').orderBy('timestamp', 'desc').get();
-
       const meldingen = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
       return res.status(200).json(meldingen);
-    } catch (error) {
-      console.error('Fout bij ophalen meldingen:', error);
-      return res.status(500).json({ error: 'Kon meldingen niet ophalen' });
+    } else {
+      return res.status(405).json({ error: 'Method not allowed' });
     }
-  } else {
-    return res.status(405).json({ error: 'Method not allowed' });
+  } catch (error) {
+    console.error("API handler error:", error);
+    return res.status(500).json({ error: 'Er is een server fout opgetreden' });
   }
 }
