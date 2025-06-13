@@ -1,3 +1,4 @@
+let postenAlarms = []; // tijdelijke opslag van postenalarms
 
 export default async function handler(req, res) {
   if (req.method === 'POST') {
@@ -15,18 +16,24 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Ongeldig alarm-object' });
     }
 
-
-    // Voeg alarm toe aan opslag
-    postenAlarms.push(alarm);
-
-    console.log('📥 Nieuw postenalarm ontvangen:', alarm);
+    // Optioneel: voorkom dubbele alarms (bijvoorbeeld zelfde postId + trigger)
+    const bestaatAl = postenAlarms.some(a => a.postId === alarm.postId && a.trigger === alarm.trigger);
+    if (!bestaatAl) {
+      postenAlarms.push(alarm);
+      console.log('📥 Nieuw postenalarm ontvangen:', alarm);
+    } else {
+      console.log('⚠️ Alarm al aanwezig, negeer:', alarm);
+    }
 
     return res.status(200).json({ message: 'Alarm ontvangen', totaal: postenAlarms.length });
   }
 
   if (req.method === 'GET') {
-    // Stuur alle opgeslagen alarms terug
-    return res.status(200).json(postenAlarms);
+    // Filter lege objecten en arrays eruit voor response
+    const filteredAlarms = postenAlarms.filter(
+      a => a && typeof a === 'object' && !Array.isArray(a) && Object.keys(a).length > 0
+    );
+    return res.status(200).json(filteredAlarms);
   }
 
   // Methode niet toegestaan
