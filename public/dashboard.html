@@ -671,6 +671,35 @@ auth.onAuthStateChanged(user => {
 
         // Functions
 
+function updateUnitIcons(units) {
+  const unitList = document.getElementById("unitList");
+  unitList.innerHTML = ""; // Maak leeg voor herladen
+
+  units.forEach(unit => {
+    const icon = {
+      police: 'fas fa-car',
+      fire: 'fas fa-fire-extinguisher',
+      ambulance: 'fas fa-ambulance'
+    }[unit.type] || 'fas fa-question';
+
+    const bg = {
+      police: 'bg-blue-600',
+      fire: 'bg-red-600',
+      ambulance: 'bg-yellow-400'
+    }[unit.type] || 'bg-gray-600';
+
+    const item = document.createElement("div");
+    item.className = `flex items-center space-x-2 p-2 rounded ${bg} text-white`;
+    item.innerHTML = `
+      <i class="${icon} text-xl"></i>
+      <span>${unit.driver} || ${unit.type.toUpperCase()} || ${unit.status.toUpperCase()}</span>
+    `;
+    unitList.appendChild(item);
+  });
+}
+
+updateUnitIcons(exampleUnits);
+
 function copyCommunityId() {
     const communityId = localStorage.getItem('serverName'); // of welke key jij gebruikt voor CommunityID
     if (!communityId) {
