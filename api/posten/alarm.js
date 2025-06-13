@@ -4,11 +4,6 @@ export default async function handler(req, res) {
   if (req.method === 'POST') {
     const alarm = req.body;
 
-    // // Validatie van alarm-object
-    // if (!alarm || typeof alarm !== 'object') {
-    //   return res.status(400).json({ error: 'Ongeldige payload' });
-    // }
-
     // Voeg alarm toe aan opslag
     postenAlarms.push(alarm);
 
@@ -19,7 +14,10 @@ export default async function handler(req, res) {
 
   if (req.method === 'GET') {
     // Stuur alle opgeslagen alarms terug
-    return res.status(200).json(postenAlarms);
+    const alarmsToSend = postenAlarms;
+    postenAlarms = []; // leegmaken na ophalen
+
+    return res.status(200).json(alarmsToSend);
   }
 
   // Methode niet toegestaan
