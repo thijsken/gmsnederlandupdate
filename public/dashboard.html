@@ -1681,10 +1681,6 @@ let vorigeMeldingenTimestamps = [];
 let bekendeMeldingen = new Set();
 
 function fetchEmergencyReports() {
-    const url = `${API_URL}/api/meldingen?serverId=${encodeURIComponent(serverId)}`;
-    console.log("🌐 Ophalen meldingen van:", url);
-
-function fetchEmergencyReports() {
   const url = `${API_URL}/api/meldingen?serverId=${encodeURIComponent(serverId)}`;
   console.log("🌐 Ophalen meldingen van:", url);
 
@@ -1724,7 +1720,6 @@ function fetchEmergencyReports() {
       console.error("❌ Fout bij ophalen meldingen:", err.message);
       showNotification("Fout bij ophalen meldingen: " + err.message, "error");
     });
-}
 }
 
 // Voeg dit toe aan je JS-bestand (na initialisatie van maps)
