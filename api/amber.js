@@ -8,7 +8,9 @@ export default function handler(req, res) {
       return res.status(400).json({ error: "Ontbrekende velden in verzoek." });
     }
 
+    // Bewaar timestamp als string (zoals ISO date string)
     const alert = { name, userId, location, description, timestamp };
+
     amberAlerts.push(alert);
     console.log("✅ Amber Alert opgeslagen:", alert);
 
@@ -16,11 +18,11 @@ export default function handler(req, res) {
   }
 
   if (req.method === 'GET') {
-    const alertsToSend = [...amberAlerts];  // Kopie maken
-    amberAlerts = [];  // Leegmaken na ophalen
-    return res.status(200).json(alertsToSend);
+        const alertsToSend = [...amberAlerts];  // Kopie maken
+    amberAlerts = [];  // Leegmaken na ophale
+    return res.status(200).json(amberAlerts);
   }
 
   res.setHeader('Allow', ['GET', 'POST']);
-  return res.status(405).json({ error: `Method ${req.method} niet toegestaan` });
+  res.status(405).json({ error: `Method ${req.method} niet toegestaan` });
 }
