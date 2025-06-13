@@ -1,18 +1,16 @@
-const meldingenPerServer = {}; // ⛔️ Let op: dit verdwijnt op Vercel na elk request
+import { db } from './firebase'; // je eigen firebase init
 
 export default async function handler(req, res) {
   const { serverId } = req.query;
 
   switch (req.method) {
     case 'GET':
-      return res.status(200).json(meldingenPerServer[serverId] || []);
+      const snapshot = await db.ref(`meldingen/${serverId}`).once('value');
+      return res.status(200).json(snapshot.val() || []);
 
     case 'POST':
       const melding = req.body;
-      if (!meldingenPerServer[serverId]) {
-        meldingenPerServer[serverId] = [];
-      }
-      meldingenPerServer[serverId].push(melding);
+      await db.ref(`meldingen/${serverId}`).push(melding);
       return res.status(201).json({ message: 'Melding opgeslagen', data: melding });
 
     default:
