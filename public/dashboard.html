@@ -546,6 +546,42 @@ fetch(`${API_URL}/api/luchtalarm/palen`)
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
     <script>
+
+          const exampleUnits = [
+    {
+      playerName: "AgentWillem",
+      type: "politie",
+      status: "vrij"
+    },
+    {
+      playerName: "BrandweerTim",
+      type: "brandweer",
+      status: "bezet"
+    },
+    {
+      playerName: "AmbuSanne",
+      type: "ambulance",
+      status: "vrij"
+    }
+  ];
+
+  // Vervolgens je bestaande code gebruiken om dit te renderen:
+  const unitsContainer = document.getElementById("unitsContainer");
+
+  exampleUnits.forEach(unit => {
+    const unitDiv = document.createElement("div");
+    unitDiv.classList.add("unit-box", unit.type);
+
+    const iconMap = {
+      politie: "🚓",
+      brandweer: "🚒",
+      ambulance: "🚑"
+    };
+
+    const icon = iconMap[unit.type] || "❓";
+    unitDiv.innerText = `${icon} ${unit.playerName} || ${unit.type} || ${unit.status}`;
+    unitsContainer.appendChild(unitDiv);
+  });
         //firebase
           const firebaseConfig = {
         apiKey: "AIzaSyAuHf66GFU9KKFVkJPAS3a1qaX2nG9xH_s",
