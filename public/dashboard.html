@@ -546,42 +546,6 @@ fetch(`${API_URL}/api/luchtalarm/palen`)
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
     <script>
-
-          const exampleUnits = [
-    {
-      playerName: "AgentWillem",
-      type: "politie",
-      status: "vrij"
-    },
-    {
-      playerName: "BrandweerTim",
-      type: "brandweer",
-      status: "bezet"
-    },
-    {
-      playerName: "AmbuSanne",
-      type: "ambulance",
-      status: "vrij"
-    }
-  ];
-
-  // Vervolgens je bestaande code gebruiken om dit te renderen:
-  const unitsContainer = document.getElementById("unitsContainer");
-
-  exampleUnits.forEach(unit => {
-    const unitDiv = document.createElement("div");
-    unitDiv.classList.add("unit-box", unit.type);
-
-    const iconMap = {
-      politie: "🚓",
-      brandweer: "🚒",
-      ambulance: "🚑"
-    };
-
-    const icon = iconMap[unit.type] || "❓";
-    unitDiv.innerText = `${icon} ${unit.playerName} || ${unit.type} || ${unit.status}`;
-    unitsContainer.appendChild(unitDiv);
-  });
         //firebase
           const firebaseConfig = {
         apiKey: "AIzaSyAuHf66GFU9KKFVkJPAS3a1qaX2nG9xH_s",
@@ -706,35 +670,6 @@ auth.onAuthStateChanged(user => {
         document.getElementById('closeCallBtn').addEventListener('click', closeCall);
 
         // Functions
-
-function updateUnitIcons(units) {
-  const unitList = document.getElementById("unitList");
-  unitList.innerHTML = ""; // Maak leeg voor herladen
-
-  units.forEach(unit => {
-    const icon = {
-      police: 'fas fa-car',
-      fire: 'fas fa-fire-extinguisher',
-      ambulance: 'fas fa-ambulance'
-    }[unit.type] || 'fas fa-question';
-
-    const bg = {
-      police: 'bg-blue-600',
-      fire: 'bg-red-600',
-      ambulance: 'bg-yellow-400'
-    }[unit.type] || 'bg-gray-600';
-
-    const item = document.createElement("div");
-    item.className = `flex items-center space-x-2 p-2 rounded ${bg} text-white`;
-    item.innerHTML = `
-      <i class="${icon} text-xl"></i>
-      <span>${unit.driver} || ${unit.type.toUpperCase()} || ${unit.status.toUpperCase()}</span>
-    `;
-    unitList.appendChild(item);
-  });
-}
-
-updateUnitIcons(exampleUnits);
 
 function copyCommunityId() {
     const communityId = localStorage.getItem('serverName'); // of welke key jij gebruikt voor CommunityID
