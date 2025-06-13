@@ -1,13 +1,20 @@
-let postenAlarms = []; // tijdelijke opslag van postenalarms
 
 export default async function handler(req, res) {
   if (req.method === 'POST') {
     const alarm = req.body;
 
     // Validatie van alarm-object
-    if (!alarm || typeof alarm !== 'object') {
-      return res.status(400).json({ error: 'Ongeldige payload' });
+    if (
+      !alarm || 
+      typeof alarm !== 'object' || 
+      Array.isArray(alarm) || 
+      Object.keys(alarm).length === 0 || 
+      !alarm.postId || 
+      !alarm.trigger
+    ) {
+      return res.status(400).json({ error: 'Ongeldig alarm-object' });
     }
+
 
     // Voeg alarm toe aan opslag
     postenAlarms.push(alarm);
