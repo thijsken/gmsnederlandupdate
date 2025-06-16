@@ -23,10 +23,16 @@ console.log('KEY after JSON.parse:', JSON.parse(`"${process.env.FIREBASE_PRIVATE
 console.log('PRIVATE KEY FIRST 50 chars:', process.env.FIREBASE_PRIVATE_KEY.slice(0, 50));
 console.log('PRIVATE KEY AFTER REPLACE:', process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n').slice(0, 50));
 console.log(JSON.stringify(process.env.FIREBASE_PRIVATE_KEY));
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-    databaseURL: process.env.FIREBASE_DATABASE_URL,
-  });
+
+const privateKey = JSON.parse(process.env.FIREBASE_PRIVATE_KEY);
+
+admin.initializeApp({
+  credential: admin.credential.cert({
+    projectId: process.env.FIREBASE_PROJECT_ID,
+    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+    privateKey: privateKey,
+  }),
+});
 }
 
 const db = admin.database();
