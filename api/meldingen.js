@@ -1,6 +1,6 @@
 // Let op: gebruik CommonJS syntax (require), geen import, vanwege Vercel en Node.js standaard
 
-const admin = require('firebase-admin/app');
+const admin = require('firebase-admin');
 
 if (!admin.apps.length) {
   const serviceAccount = {
@@ -36,9 +36,10 @@ const privateKey = process.env.FIREBASE_PRIVATE_KEY
       credential: admin.credential.cert({
         projectId: process.env.FIREBASE_PROJECT_ID,
         clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-        databaseUrl: process.env.FIREBASE_DATABASE_URL,
+        // databaseUrl: process.env.FIREBASE_DATABASE_URL,
         privateKey: process.env.FIREBASE_PRIVATE_KEY,
       }),
+      databaseUrl: process.env.FIREBASE_DATABASE_URL,
     });
   }
 }
