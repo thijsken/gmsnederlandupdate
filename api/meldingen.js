@@ -1,13 +1,12 @@
 console.log('Bestanden in /api:', require('fs').readdirSync(__dirname));
-const { db } = require('./firebaseAdmin'); // pad afhankelijk van structuur
-const { realtimeDb } = require('./firebaseAdmin');
+const { realtimeDb  } = require('./firebaseAdmin'); // pad afhankelijk van structuur
 
 module.exports = async function handler(req, res) {
   try {
     const { serverId } = req.query;
     if (!serverId) return res.status(400).json({ error: 'serverId ontbreekt' });
 
-    const ref = db.ref(`servers/${serverId}/Meldingen`);
+    const ref = realtimeDb.ref(`servers/${serverId}/Meldingen`);
 
     if (req.method === 'GET') {
       const snapshot = await ref.once('value');
