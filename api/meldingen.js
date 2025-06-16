@@ -27,9 +27,12 @@ if (!admin.apps.length) {
 const db = admin.database();
 
 module.exports = async function handler(req, res) {
+  console.log('API aangeroepen, methode:', req.method);
   const { serverId } = req.query;
+  console.log('serverId:', serverId);
 
   if (!serverId) {
+    console.log('Fout: serverId ontbreekt');
     return res.status(400).json({ error: 'serverId ontbreekt' });
   }
 
@@ -39,20 +42,21 @@ module.exports = async function handler(req, res) {
     if (req.method === 'GET') {
       const snapshot = await ref.once('value');
       const data = snapshot.val() || {};
+      console.log('Data opgehaald:', data);
       return res.status(200).json(data);
     } else if (req.method === 'POST') {
       const melding = req.body;
-
-      // Je kunt hier eventueel validatie toevoegen op melding
+      console.log('POST body:', melding);
 
       const newRef = ref.push();
       await newRef.set(melding);
       return res.status(201).json({ message: 'Melding opgeslagen', data: melding });
     } else {
+      console.log('Fout: method not allowed:', req.method);
       return res.status(405).json({ error: 'Method not allowed' });
     }
   } catch (error) {
-    console.error('API fout:', error);
+    console.error('Fout in API:', error);
     return res.status(500).json({ error: 'Server error', details: error.message });
   }
 };
