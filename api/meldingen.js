@@ -16,6 +16,11 @@ const serviceAccount = {
   client_x509_cert_url: process.env.FIREBASE_CLIENT_CERT_URL,
 };
 
+if (!process.env.FIREBASE_PRIVATE_KEY) {
+  console.error('FIREBASE_PRIVATE_KEY is niet ingesteld!');
+  return res.status(500).json({ error: 'Server misconfiguration: FIREBASE_PRIVATE_KEY ontbreekt' });
+}
+
 if (!getApps().length) {
   initializeApp({
     credential: cert(serviceAccount),
