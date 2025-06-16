@@ -19,6 +19,7 @@ const serviceAccount = {
 
 console.log('PRIVATE KEY FIRST 50 chars:', process.env.FIREBASE_PRIVATE_KEY.slice(0, 50));
 console.log('PRIVATE KEY AFTER REPLACE:', process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n').slice(0, 50));
+console.log(JSON.stringify(process.env.FIREBASE_PRIVATE_KEY));
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
     databaseURL: process.env.FIREBASE_DATABASE_URL,
