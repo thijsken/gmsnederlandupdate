@@ -1,47 +1,58 @@
 // /pages/api/meldingen.js
 
-import fs from 'fs';
-import path from 'path';
+import { initializeApp, cert, getApps } from 'firebase-admin/app';
+import { getDatabase } from 'firebase-admin/database';
 
-const DATA_FILE = path.resolve('./data/meldingen.json');
+const serviceAccount = {
+  type: 'service_account',
+  project_id: process.env.FIREBASE_PROJECT_ID,
+  private_key_id: process.env.FIREBASE_PRIVATE_KEY_ID,
+  private_key: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+  client_email: process.env.FIREBASE_CLIENT_EMAIL,
+  client_id: process.env.FIREBASE_CLIENT_ID,
+  auth_uri: 'https://accounts.google.com/o/oauth2/auth',
+  token_uri: 'https://oauth2.googleapis.com/token',
+  auth_provider_x509_cert_url: 'https://www.googleapis.com/oauth2/v1/certs',
+  client_x509_cert_url: process.env.FIREBASE_CLIENT_CERT_URL,
+};
 
-function readData() {
-  try {
-    const raw = fs.readFileSync(DATA_FILE, 'utf8');
-    return JSON.parse(raw);
-  } catch (err) {
-    return {}; // Geen bestand of corrupte inhoud? Start leeg
-  }
+if (!getApps().length) {
+  initializeApp({
+    credential: cert(serviceAccount),
+    databaseURL: process.env.FIREBASE_DATABASE_URL,
+  });
 }
 
-function writeData(data) {
-  fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
-}
+const db = getDatabase();
 
-export default function handler(req, res) {
+export default async function handler(req, res) {
   const { serverId } = req.query;
 
   if (!serverId) {
     return res.status(400).json({ error: 'serverId ontbreekt' });
   }
 
-  const data = readData();
+  const ref = db.ref(`servers/${serverId}/Meldingen`);
 
   switch (req.method) {
     case 'GET':
-      return res.status(200).json(data[serverId] || []);
-
-    case 'POST':
-      const melding = req.body;
-
-      if (!data[serverId]) {
-        data[serverId] = [];
+      try {
+        const snapshot = await ref.once('value');
+        const data = snapshot.val() || {};
+        return res.status(200).json(data);
+      } catch (error) {
+        return res.status(500).json({ error: 'Fout bij ophalen', details: error.message });
       }
 
-      data[serverId].push(melding);
-      writeData(data);
-
-      return res.status(201).json({ message: 'Melding opgeslagen', data: melding });
+    case 'POST':
+      try {
+        const melding = req.body;
+        const newRef = ref.push();
+        await newRef.set(melding);
+        return res.status(201).json({ message: 'Melding opgeslagen', data: melding });
+      } catch (error) {
+        return res.status(500).json({ error: 'Fout bij opslaan', details: error.message });
+      }
 
     default:
       return res.status(405).json({ error: 'Method not allowed' });
