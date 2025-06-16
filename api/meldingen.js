@@ -16,6 +16,7 @@ if (!admin.apps.length) {
     client_x509_cert_url: process.env.FIREBASE_CLIENT_CERT_URL,
   };
 
+  
 // Fix de private key - eerst alles dubbel escapen verwijderen
 const privateKey = process.env.FIREBASE_PRIVATE_KEY
   .replace(/\\n/g, '\n')  // converteert '\\n' naar echte line breaks
