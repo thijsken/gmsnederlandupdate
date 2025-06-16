@@ -1,7 +1,7 @@
-// /pages/api/meldingen.js
+// In /pages/api/meldingen.js
 
-import { initializeApp, cert, getApps } from 'firebase-admin/app';
-import { getDatabase } from 'firebase-admin/database';
+const { initializeApp, cert, getApps } = require('firebase-admin/app');
+const { getDatabase } = require('firebase-admin/database');
 
 const serviceAccount = {
   type: 'service_account',
@@ -16,11 +16,6 @@ const serviceAccount = {
   client_x509_cert_url: process.env.FIREBASE_CLIENT_CERT_URL,
 };
 
-if (!process.env.FIREBASE_PRIVATE_KEY) {
-  console.error('FIREBASE_PRIVATE_KEY is niet ingesteld!');
-  return res.status(500).json({ error: 'Server misconfiguration: FIREBASE_PRIVATE_KEY ontbreekt' });
-}
-
 if (!getApps().length) {
   initializeApp({
     credential: cert(serviceAccount),
@@ -30,7 +25,7 @@ if (!getApps().length) {
 
 const db = getDatabase();
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   const { serverId } = req.query;
 
   if (!serverId) {
@@ -62,4 +57,4 @@ export default async function handler(req, res) {
     default:
       return res.status(405).json({ error: 'Method not allowed' });
   }
-}
+};
