@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 
+const firebaseAdmin = require('./api/firebaseAdmin');
 const meldingenRoutes = require('./api/meldingen');
 const unitsRoutes = require('./api/units');
 const luchtalarmRoutes = require('./api/luchtalarm/palen');
@@ -24,6 +25,7 @@ app.get('/', (req, res) => {
 });
 
 // API-routes
+app.use('/api/firebaseAdmin.js', firebaseAdmin);
 app.use('/api/meldingen', meldingenRoutes);
 app.use('/api/units', unitsRoutes);
 app.use('/api/luchtalarm/palen', luchtalarmRoutes);
