@@ -1702,11 +1702,14 @@ function fetchEmergencyReports() {
       return data;
     })
     .then(data => {
-      if (!Array.isArray(data)) {
-        throw new Error("📛 Ongeldig antwoord van server (geen lijst): " + JSON.stringify(data));
+      if (!data || typeof data !== 'object') {
+        throw new Error("📛 Ongeldig antwoord van server (geen object): " + JSON.stringify(data));
       }
 
-      const nieuweMeldingen = data.filter(m =>
+      // Maak van het object een array met meldingen
+      const meldingenArray = Object.values(data);
+
+      const nieuweMeldingen = meldingenArray.filter(m =>
         m.status === 'new' && !bekendeMeldingen.has(m.timestamp)
       );
 
