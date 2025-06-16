@@ -2,16 +2,7 @@ const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const cors = require('cors');
-const admin = require('./api/firebaseAdmin');
-
-// Firestore Admin SDK initialiseren
-// Let op: je hebt een service-account JSON bestand nodig, zie Firebase Console > Projectinstellingen > Service accounts
-// const serviceAccount = require('./confige/gmsnederland-3029e-firebase-adminsdk-fbsvc-c900bf64b5.json');
-
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-});
-const db = admin.firestore();
+const { admin, db } = require('./api/firebaseAdmin');  // import admin & db instance
 
 const app = express();
 app.use(cors());
@@ -20,7 +11,7 @@ app.use(express.json());
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: '*', // Voor productie: pas dit aan naar je frontend URL
+    origin: '*', // product: zet hier je frontend URL
     methods: ['GET', 'POST'],
   },
 });
