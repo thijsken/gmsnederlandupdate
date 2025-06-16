@@ -1,11 +1,9 @@
-// firebaseAdmin.js
 const admin = require('firebase-admin');
 
 if (!admin.apps.length) {
   let serviceAccount;
 
   if (process.env.FIREBASE_SERVICE_ACCOUNT) {
-    // Optie 1: JSON string van hele service account
     try {
       serviceAccount = JSON.parse(
         process.env.FIREBASE_SERVICE_ACCOUNT.replace(/\\n/g, '\n')
@@ -15,7 +13,6 @@ if (!admin.apps.length) {
       throw new Error('FIREBASE_SERVICE_ACCOUNT is ongeldig');
     }
   } else {
-    // Optie 2: losse environment variables
     if (
       !process.env.FIREBASE_PRIVATE_KEY ||
       !process.env.FIREBASE_CLIENT_EMAIL ||
@@ -42,10 +39,13 @@ if (!admin.apps.length) {
 
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
-    databaseURL: process.env.FIREBASE_DATABASE_URL,
+    databaseURL: process.env.FIREBASE_DATABASE_URL, // voor Realtime Database
   });
 }
 
-const db = admin.database();
+// Firestore instantie
+const firestoreDb = admin.firestore();
+// Realtime Database instantie
+const realtimeDb = admin.database();
 
-module.exports = { admin, db };
+module.exports = { admin, firestoreDb, realtimeDb };
