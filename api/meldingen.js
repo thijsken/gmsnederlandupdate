@@ -32,7 +32,7 @@ console.log(JSON.stringify(process.env.FIREBASE_PRIVATE_KEY));
   });
 }
 
-const db = admin.database();
+  const db = admin.database();
 
 module.exports = async function handler(req, res) {
   try {
