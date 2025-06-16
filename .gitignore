@@ -1,6 +1,2 @@
 node_modules
-config/serviceAccountKey.json
-config/gmsnederland-3029e-firebase-adminsdk-fbsvc-7937dbb046.json
 echo public/serviceAccountKey.json >> .gitignore
-/data/meldingen.json
-
