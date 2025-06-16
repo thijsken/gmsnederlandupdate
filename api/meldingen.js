@@ -1,6 +1,6 @@
 // Let op: gebruik CommonJS syntax (require), geen import, vanwege Vercel en Node.js standaard
 
-const admin = require('firebase-admin');
+const admin = require('firebase-admin/app');
 
 if (!admin.apps.length) {
   const serviceAccount = {
