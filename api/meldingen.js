@@ -1,3 +1,4 @@
+console.log('Bestanden in /api:', require('fs').readdirSync(__dirname));
 const { db } = require('./firebaseAdmin'); // pad afhankelijk van structuur
 
 module.exports = async function handler(req, res) {
