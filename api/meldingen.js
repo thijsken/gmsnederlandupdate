@@ -36,7 +36,7 @@ admin.initializeApp({
     // databaseUrl: process.env.FIREBASE_DATABASE_URL,
     privateKey: privateKey,
   }),
-  databaseUrl: process.env.FIREBASE_DATABASE_URL,
+  databaseURL: process.env.FIREBASE_DATABASE_URL,
 });
 
   const db = admin.database();
