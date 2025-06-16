@@ -23,8 +23,6 @@ console.log('PRIVATE KEY FIRST 50 chars:', process.env.FIREBASE_PRIVATE_KEY.slic
 console.log('PRIVATE KEY AFTER REPLACE:', process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n').slice(0, 50));
 console.log(JSON.stringify(process.env.FIREBASE_PRIVATE_KEY));
 
-const privateKey = JSON.parse(process.env.FIREBASE_PRIVATE_KEY);
-
   admin.initializeApp({
     credential: admin.credential.cert({
       projectId: process.env.FIREBASE_PROJECT_ID,
