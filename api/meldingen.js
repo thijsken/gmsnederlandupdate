@@ -22,21 +22,22 @@ const privateKey = process.env.FIREBASE_PRIVATE_KEY
   .replace(/\\n/g, '\n')  // converteert '\\n' naar echte line breaks
   .replace(/\\\\n/g, '\n'); // fallback: als er per ongeluk vier backslashes zijn
 
-console.log("PRIVATE KEY:\n", privateKey);
-console.log("LENGTH:", privateKey?.length);
-console.log('RAW ENV:', process.env.FIREBASE_PRIVATE_KEY);
-console.log('KEY after replace:', process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'));
-console.log('KEY after JSON.parse:', process.env.FIREBASE_PRIVATE_KEY);
-console.log('PRIVATE KEY FIRST 50 chars:', process.env.FIREBASE_PRIVATE_KEY.slice(0, 50));
-console.log('PRIVATE KEY AFTER REPLACE:', process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n').slice(0, 50));
-console.log(JSON.stringify(process.env.FIREBASE_PRIVATE_KEY));
+// console.log("PRIVATE KEY:\n", privateKey);
+// console.log("LENGTH:", privateKey?.length);
+// console.log('RAW ENV:', process.env.FIREBASE_PRIVATE_KEY);
+// console.log('KEY after replace:', process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'));
+// // console.log('KEY after JSON.parse:', process.env.FIREBASE_PRIVATE_KEY);
+// console.log('PRIVATE KEY FIRST 50 chars:', process.env.FIREBASE_PRIVATE_KEY.slice(0, 50));
+// console.log('PRIVATE KEY AFTER REPLACE:', process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n').slice(0, 50));
+// console.log(JSON.stringify(process.env.FIREBASE_PRIVATE_KEY));
 
   if (!admin.apps.length) {
     admin.initializeApp({
       credential: admin.credential.cert({
         projectId: process.env.FIREBASE_PROJECT_ID,
         clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-        privateKey,
+        databaseUrl: process.env.FIREBASE_DATABASE_URL,
+        privateKey: process.env.FIREBASE_PRIVATE_KEY,
       }),
     });
   }
