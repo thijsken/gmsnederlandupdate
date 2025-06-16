@@ -10,3 +10,4 @@ if (!admin.apps.length) {
 const realtimeDb = admin.database();
 
 module.exports = { realtimeDb };
+
