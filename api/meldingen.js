@@ -16,6 +16,8 @@ if (!admin.apps.length) {
     client_x509_cert_url: process.env.FIREBASE_CLIENT_CERT_URL,
   };
 
+console.log("PRIVATE KEY:\n", privateKey);
+console.log("LENGTH:", privateKey?.length);
 console.log('RAW ENV:', process.env.FIREBASE_PRIVATE_KEY);
 console.log('KEY after replace:', process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'));
 console.log('KEY after JSON.parse:', JSON.parse(`"${process.env.FIREBASE_PRIVATE_KEY}"`));
