@@ -2,7 +2,6 @@
 
 const admin = require('firebase-admin');
 
-if (!admin.apps.length) {
   const serviceAccount = {
     type: 'service_account',
     project_id: process.env.FIREBASE_PROJECT_ID,
@@ -19,8 +18,7 @@ if (!admin.apps.length) {
 
 // Fix de private key - eerst alles dubbel escapen verwijderen
 const privateKey = process.env.FIREBASE_PRIVATE_KEY
-  .replace(/\\n/g, '\n')  // converteert '\\n' naar echte line breaks
-  .replace(/\\\\n/g, '\n'); // fallback: als er per ongeluk vier backslashes zijn
+    .replace(/\\n/g, '\n')  // converteert '\\n' naar echte line breaks
 
 // console.log("PRIVATE KEY:\n", privateKey);
 // console.log("LENGTH:", privateKey?.length);
@@ -31,18 +29,15 @@ const privateKey = process.env.FIREBASE_PRIVATE_KEY
 // console.log('PRIVATE KEY AFTER REPLACE:', process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n').slice(0, 50));
 // console.log(JSON.stringify(process.env.FIREBASE_PRIVATE_KEY));
 
-  if (!admin.apps.length) {
-    admin.initializeApp({
-      credential: admin.credential.cert({
-        projectId: process.env.FIREBASE_PROJECT_ID,
-        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-        // databaseUrl: process.env.FIREBASE_DATABASE_URL,
-        privateKey: process.env.FIREBASE_PRIVATE_KEY,
-      }),
-      databaseUrl: process.env.FIREBASE_DATABASE_URL,
-    });
-  }
-}
+admin.initializeApp({
+  credential: admin.credential.cert({
+    projectId: process.env.FIREBASE_PROJECT_ID,
+    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+    // databaseUrl: process.env.FIREBASE_DATABASE_URL,
+    privateKey: privateKey,
+  }),
+  databaseUrl: process.env.FIREBASE_DATABASE_URL,
+});
 
   const db = admin.database();
 
