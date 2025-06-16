@@ -28,18 +28,18 @@ console.log('PRIVATE KEY AFTER REPLACE:', process.env.FIREBASE_PRIVATE_KEY.repla
 const db = admin.database();
 
 module.exports = async function handler(req, res) {
-  console.log('API aangeroepen, methode:', req.method);
-  const { serverId } = req.query;
-  console.log('serverId:', serverId);
-
-  if (!serverId) {
-    console.log('Fout: serverId ontbreekt');
-    return res.status(400).json({ error: 'serverId ontbreekt' });
-  }
-
-  const ref = db.ref(`servers/${serverId}/Meldingen`);
-
   try {
+    console.log('API aangeroepen, methode:', req.method);
+    const { serverId } = req.query;
+    console.log('serverId:', serverId);
+
+    if (!serverId) {
+      console.log('Fout: serverId ontbreekt');
+      return res.status(400).json({ error: 'serverId ontbreekt' });
+    }
+
+    const ref = db.ref(`servers/${serverId}/Meldingen`);
+
     if (req.method === 'GET') {
       const snapshot = await ref.once('value');
       const data = snapshot.val() || {};
