@@ -1,4 +1,4 @@
-const { realtimeDb } = require('../../lib/firebaseAdmin'); // pas dit pad aan als nodig
+const { realtimeDb } = require('./firebaseAdmin'); // pas dit pad aan als nodig
 
 module.exports = async function handler(req, res) {
   const { serverId } = req.query;
