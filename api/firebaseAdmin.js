@@ -1,33 +1,35 @@
 const admin = require('firebase-admin');
-const serviceAccount = require('./config/firebase-service-account.json');
+const fs = require('fs');
+const path = require('path');
 
 if (!admin.apps.length) {
-  const rawServiceAccount = process.env.FIREBASE_SERVICE_ACCOUNT;
-
-  if (!rawServiceAccount) {
-    throw new Error('❌ FIREBASE_SERVICE_ACCOUNT ontbreekt in de environment variables');
-  }
-
   let serviceAccount;
-  try {
-    console.log('RAW FIREBASE_SERVICE_ACCOUNT:', rawServiceAccount);
-    serviceAccount = JSON.parse(rawServiceAccount);
 
-    // Zorg dat de newline correct wordt geïnterpreteerd
-    if (serviceAccount.private_key) {
-      serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+  try {
+    if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+      // 🔐 Uit environment variabele
+      console.log('🔐 FIREBASE_SERVICE_ACCOUNT geladen uit environment variabele');
+      serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+
+      // Fix voor newline in private key
+      if (serviceAccount.private_key) {
+        serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+      }
+
+    } else {
+      // 📄 Lokaal JSON bestand (root/config/firebase-service-account.json)
+      const filePath = path.resolve(__dirname, '../config/firebase-service-account.json');
+      console.log('📄 firebase-service-account.json geladen vanaf root/config/');
+      serviceAccount = JSON.parse(fs.readFileSync(filePath, 'utf8'));
     }
-  } catch (err) {
-    console.error('❌ JSON parse error voor FIREBASE_SERVICE_ACCOUNT:', err);
-    throw err;
-  }
 
-  try {
+    // 🚀 Initialiseer Firebase
     admin.initializeApp({
       credential: admin.credential.cert(serviceAccount),
       databaseURL: 'https://gmsnederland-3029e.firebaseio.com',
     });
-    console.log('✅ Firebase Admin is geïnitialiseerd');
+
+    console.log('✅ Firebase Admin succesvol geïnitialiseerd');
   } catch (err) {
     console.error('❌ Fout bij Firebase initialisatie:', err);
     throw err;
