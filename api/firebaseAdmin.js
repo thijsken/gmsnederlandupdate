@@ -1,34 +1,20 @@
 const admin = require('firebase-admin');
 
-console.log(JSON.stringify(require('./serviceAccountKey.json')));
-
 if (!admin.apps.length) {
-  const rawServiceAccount = process.env.FIREBASE_SERVICE_ACCOUNT;
+  const serviceAccount = {
+    project_id: process.env.FIREBASE_PROJECT_ID,
+    private_key: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+    client_email: process.env.FIREBASE_CLIENT_EMAIL,
+    // Voeg eventueel andere velden toe als nodig, zoals 'type': 'service_account'
+    type: 'service_account',
+  };
 
-  if (!rawServiceAccount) {
-    throw new Error('❌ FIREBASE_SERVICE_ACCOUNT ontbreekt in de environment variables');
-  }
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+    databaseURL: `https://${process.env.FIREBASE_PROJECT_ID}.firebaseio.com`,
+  });
 
-  let serviceAccount;
-  try {
-    // Parse de JSON string uit de environment variable
-    serviceAccount = JSON.parse(rawServiceAccount);
-
-    // Vervang ge-escaped newline karakters door echte nieuwe regels in private_key
-    if (serviceAccount.private_key && typeof serviceAccount.private_key === 'string') {
-      serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
-    }
-
-    admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount),
-      databaseURL: 'https://gmsnederland-3029e.firebaseio.com',
-    });
-
-    console.log('✅ Firebase Admin succesvol geïnitialiseerd');
-  } catch (err) {
-    console.error('❌ Fout bij Firebase initialisatie:', err);
-    throw err;
-  }
+  console.log('✅ Firebase Admin succesvol geïnitialiseerd');
 }
 
 const realtimeDb = admin.database();
