@@ -9,10 +9,11 @@ if (!admin.apps.length) {
 
   let serviceAccount;
   try {
+    // Parse de JSON string uit de environment variable
     serviceAccount = JSON.parse(rawServiceAccount);
 
-    // Fix de \n in de private key
-    if (serviceAccount.private_key) {
+    // Vervang ge-escaped newline karakters door echte nieuwe regels in private_key
+    if (serviceAccount.private_key && typeof serviceAccount.private_key === 'string') {
       serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
     }
 
