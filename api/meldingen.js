@@ -1,36 +1,26 @@
 const { realtimeDb } = require('../lib/firebaseAdmin');
 
-module.exports = async function handler(req, res) {
-  const { serverId } = req.query;
-
-  if (!serverId) {
-    return res.status(400).json({ error: 'serverId ontbreekt' });
-  }
-
-  const ref = realtimeDb.ref(`servers/${serverId}/Meldingen`);
+export default async function handler(req, res) {
+  console.log("✅ /api/meldingen bereikt");
 
   try {
-    if (req.method === 'GET') {
-      const snapshot = await ref.once('value');
-      const data = snapshot.val() || {};
-      return res.status(200).json(data);
+    const { serverId } = req.query;
+    console.log("➡️ serverId ontvangen:", serverId);
+
+    const ref = realtimeDb.ref(`meldingen/${serverId}`);
+    const snapshot = await ref.once('value');
+
+    if (!snapshot.exists()) {
+      console.log("❌ Geen data gevonden voor serverId");
+      return res.status(404).json({ error: 'Geen data gevonden' });
     }
 
-    if (req.method === 'POST') {
-      const melding = req.body;
+    const data = snapshot.val();
+    console.log("✅ Data opgehaald:", data);
 
-      if (!melding || typeof melding !== 'object') {
-        return res.status(400).json({ error: 'Ongeldige melding data' });
-      }
-
-      const newRef = ref.push();
-      await newRef.set(melding);
-      return res.status(201).json({ message: '✅ Melding opgeslagen', data: melding });
-    }
-
-    return res.status(405).json({ error: 'Method not allowed' });
+    return res.status(200).json(data);
   } catch (error) {
-    console.error('❌ Fout in API:', error);
-    return res.status(500).json({ error: 'Server error', details: error.message });
+    console.error("🔥 Fout in /api/meldingen:", error);
+    return res.status(500).json({ error: 'Interne serverfout' });
   }
-};
+}
