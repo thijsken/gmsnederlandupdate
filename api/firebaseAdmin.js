@@ -1,4 +1,5 @@
 const admin = require('firebase-admin');
+const serviceAccount = require('./config/firebase-service-account.json');
 
 if (!admin.apps.length) {
   const rawServiceAccount = process.env.FIREBASE_SERVICE_ACCOUNT;
@@ -24,7 +25,7 @@ if (!admin.apps.length) {
   try {
     admin.initializeApp({
       credential: admin.credential.cert(serviceAccount),
-      databaseURL: 'https://gmsnederland-3029e-default-rtdb.europe-west1.firebasedatabase.app/',
+      databaseURL: 'https://gmsnederland-3029e.firebaseio.com',
     });
     console.log('✅ Firebase Admin is geïnitialiseerd');
   } catch (err) {
