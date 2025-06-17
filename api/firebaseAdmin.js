@@ -1,5 +1,7 @@
 const admin = require('firebase-admin');
 
+console.log(JSON.stringify(require('./serviceAccountKey.json')));
+
 if (!admin.apps.length) {
   const rawServiceAccount = process.env.FIREBASE_SERVICE_ACCOUNT;
 
