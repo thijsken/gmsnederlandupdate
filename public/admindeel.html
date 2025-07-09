@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GMS Nederland - Admin Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Poppins', sans-serif; background-color: #f0f4f8; }
+    .btn-primary { background: linear-gradient(to right, #1a56db, #0d3e8f); }
+    .btn-primary:hover { background: linear-gradient(to right, #0d3e8f, #1a56db); }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+  <div id="loginScreen" class="fixed inset-0 bg-blue-900 flex items-center justify-center z-50">
+    <div class="w-full max-w-md bg-white rounded-xl shadow-lg p-8 space-y-6">
+      <h1 class="text-3xl font-bold text-center">GMS Nederland</h1>
+      <form id="loginForm" class="space-y-4">
+        <input id="email" type="email" placeholder="E-mailadres" required class="w-full px-4 py-2 border border-gray-300 rounded-lg" />
+        <input id="password" type="password" placeholder="Wachtwoord" required class="w-full px-4 py-2 border border-gray-300 rounded-lg" />
+        <button type="submit" class="w-full btn-primary py-2 px-4 text-white font-medium rounded-lg">Inloggen</button>
+      </form>
+      <div id="loginError" class="text-red-500 text-center hidden">Fout bij inloggen</div>
+    </div>
+  </div>
+
+
+  <!-- Main Dashboard -->
+  <div id="dashboard" class="min-h-screen hidden">
+    <div class="flex h-screen">
+      <!-- Sidebar -->
+      <aside class="w-64 bg-blue-900 text-white flex flex-col">
+        <div class="p-6 flex items-center space-x-3 border-b border-blue-700">
+          <img src="logogmsnederland.png" class="w-10 h-10" alt="Logo" />
+          <div>
+            <h2 class="text-xl font-bold">GMS Nederland</h2>
+            <span class="text-xs">Admin Panel</span>
+          </div>
+        </div>
+        <nav class="flex-1 p-4 space-y-2">
+          <a href="#" class="flex items-center px-3 py-2 rounded-lg bg-blue-700"><i class="fas fa-tachometer-alt mr-3"></i> Dashboard</a>
+          <a href="support.html" class="flex items-center px-3 py-2 hover:bg-blue-800 rounded-lg"><i class="fas fa-server mr-3"></i> SupportChat</a>
+        </nav>
+        <div class="p-4 border-t border-blue-700">
+          <button id="logoutBtn" class="w-full bg-red-500 hover:bg-red-600 text-white py-2 rounded-lg text-sm font-semibold"><i class="fas fa-sign-out-alt mr-2"></i> Uitloggen</button>
+        </div>
+      </aside>
+
+      <!-- Main Content -->
+      <main class="flex-1 p-8 overflow-y-auto">
+        <h1 class="text-2xl font-bold mb-6">Overzicht</h1>
+
+                <!-- Statistiek Kaarten -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white p-6 rounded-lg shadow flex items-center space-x-4">
+            <div class="bg-blue-100 p-3 rounded-full">
+                <i class="fas fa-server text-blue-600"></i>
+            </div>
+            <div>
+                <p class="text-gray-600">Actieve servers</p>
+                <p class="text-2xl font-bold"><span id="aantalActieveServers">0</span></p>
+            </div>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow flex items-center space-x-4">
+            <div class="bg-green-100 p-3 rounded-full">
+                <i class="fas fa-users text-green-600"></i>
+            </div>
+            <div>
+                <p class="text-gray-600">Actieve gebruikers</p>
+                <p class="text-2xl font-bold"><span id="aantalActivegebruikers">0</span></p>
+            </div>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow flex items-center space-x-4">
+            <div class="bg-yellow-100 p-3 rounded-full">
+                <i class="fas fa-exclamation-triangle text-yellow-600"></i>
+            </div>
+            <div>
+                <p class="text-gray-600">Onderhoud</p>
+                <p class="text-2xl font-bold"><span id="aantalOnderhoud">0</span></p>
+            </div>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow flex items-center space-x-4">
+            <div class="bg-red-100 p-3 rounded-full">
+                <i class="fas fa-ban text-red-600"></i>
+            </div>
+            <div>
+                <p class="text-gray-600">Uitgeschakeld</p>
+                <p class="text-2xl font-bold"><span id="aanstaluitgeschakeld">0</span></p>
+            </div>
+            </div>
+        </div>
+
+
+  <!-- Grid layout met server aanmaken links en lijst rechts -->
+  <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
+    <!-- Server Aanmaken -->
+    <section class="bg-white p-6 rounded-xl shadow">
+      <h2 class="text-xl font-semibold mb-4">Server Aanmaken</h2>
+      <form id="serverForm" class="space-y-4">
+        <div>
+          <label class="block mb-1 text-sm">Gebruikersnaam</label>
+          <input id="gebruiker" type="text" placeholder="Voer gebruikersnaam in" required class="w-full px-4 py-2 border border-gray-300 rounded-lg" />
+        </div>
+        <div>
+          <label class="block mb-1 text-sm">Servernaam</label>
+          <input id="servernaam" type="text" placeholder="Voer servernaam in" required class="w-full px-4 py-2 border border-gray-300 rounded-lg" />
+        </div>
+        <div>
+          <label class="block mb-1 text-sm">Pakkettype</label>
+          <select id="pakket" required class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+            <option value="">Selecteer pakket</option>
+            <option value="basic">Basis</option>
+            <option value="pro">Professioneel</option>
+            <option value="enterprise">Enterprise</option>
+            <option value="custom">Aangepast</option>
+          </select>
+        </div>
+        <div>
+          <label class="block mb-1 text-sm">Startdatum</label>
+          <input id="datum" type="date" required class="w-full px-4 py-2 border border-gray-300 rounded-lg" />
+        </div>
+        <div class="text-right">
+          <button type="submit" class="btn-primary px-6 py-2 text-white rounded-lg">Server Aanmaken</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Serverlijst -->
+    <section class="bg-white p-6 rounded-xl shadow">
+      <h2 class="text-xl font-semibold mb-4">Bestaande Servers</h2>
+      <div class="relative mb-4">
+        <input type="text" placeholder="Zoek servers..." class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg w-full" />
+        <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full table-auto border">
+            <thead class="bg-gray-100 text-left">
+                <tr>
+                    <th class="px-4 py-2 border">Naam</th>
+                    <th class="px-4 py-2 border">Gebruiker</th>
+                    <th class="px-4 py-2 border">Pakket</th>
+                    <th class="px-4 py-2 border">Datum</th>
+                    <th class="px-4 py-2 border">Status</th>
+                    <th class="px-4 py-2 border">Actie</th>
+                </tr>
+            </thead>
+            <tbody id="serverList">
+                <!-- Dynamisch gevuld via JS -->
+            </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+</main>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyC_3j4e52mGowOwP7aGxLNnOGcC295J0e8",
+      authDomain: "gmsnederlandatabase.firebaseapp.com",
+      projectId: "gmsnederlandatabase",
+      databaseURL: "https://gmsnederlandatabase-default-rtdb.europe-west1.firebasedatabase.app"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.database();
+
+    // voor active gebruikers op dat moment.
+    auth.onAuthStateChanged(user => {
+  if (user) {
+    const userStatusDatabaseRef = db.ref('/status/' + user.uid);
+
+    const isOfflineForDatabase = {
+      state: 'offline',
+      last_changed: firebase.database.ServerValue.TIMESTAMP,
+    };
+
+    const isOnlineForDatabase = {
+      state: 'online',
+      last_changed: firebase.database.ServerValue.TIMESTAMP,
+    };
+
+    db.ref('.info/connected').on('value', snapshot => {
+      if (snapshot.val() === false) return;
+
+      userStatusDatabaseRef
+        .onDisconnect()
+        .set(isOfflineForDatabase)
+        .then(() => {
+          userStatusDatabaseRef.set(isOnlineForDatabase);
+        });
+    });
+
+    telActieveGebruikers(); // start de teller zodra ingelogd
+  } else {
+    document.getElementById('aantalActivegebruikers').textContent = 0;
+  }
+});
+
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      try {
+        await auth.signInWithEmailAndPassword(email, password);
+        document.getElementById('loginScreen').classList.add('hidden');
+        document.getElementById('dashboard').classList.remove('hidden');
+        loadServers();
+        telActieveServers();
+        telonderhoudactive();
+        teluitgeschakeldServers();
+      } catch (err) {
+        document.getElementById('loginError').classList.remove('hidden');
+      }
+    });
+
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+      await auth.signOut();
+      document.getElementById('dashboard').classList.add('hidden');
+      document.getElementById('loginScreen').classList.remove('hidden');
+    });
+
+    document.getElementById('serverForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const gebruiker = document.getElementById('gebruiker').value;
+
+    const server = {
+        gebruiker: gebruiker,
+        servernaam: document.getElementById('servernaam').value,
+        pakket: document.getElementById('pakket').value,
+        datum: document.getElementById('datum').value,
+        status: 'actief',
+        adminServer: gebruiker,
+        units: 'nog geen',
+        meldingen: 'nog geen'
+    };
+
+    await db.ref('servers').push(server);
+    document.getElementById('serverForm').reset();
+    loadServers();
+    telActieveServers();
+    telonderhoudactive();
+    teluitgeschakeldServers();
+    });
+
+    function getInitials(name) {
+  return name
+    .split(' ')
+    .map(n => n[0])
+    .join('')
+    .toUpperCase();
+}
+
+    function createBadge(text, color) {
+  const colorClasses = {
+    pro: 'bg-blue-100 text-blue-700',
+    basic: 'bg-yellow-100 text-yellow-800',
+    enterprise: 'bg-purple-100 text-purple-700',
+    custom: 'bg-gray-100 text-gray-700'
+  };
+  return `<span class="text-xs px-2 py-1 rounded-full ${colorClasses[text] || 'bg-gray-100 text-gray-700'}">${text.charAt(0).toUpperCase() + text.slice(1)}</span>`;
+}
+
+    function createStatusBadge(status) {
+        const statuses = {
+        actief: 'bg-green-100 text-green-700',
+        gesuspendeerd: 'bg-orange-100 text-orange-700',
+        uitgeschakeld: 'bg-red-100 text-red-700',
+        onderhoud: 'bg-yellow-100 text-yellow-700'
+    };
+    return `<span class="text-xs px-2 py-1 rounded-full ${statuses[status.toLowerCase()] || 'bg-gray-200 text-gray-600'}">${status}</span>`;
+}
+
+    function loadServers() {
+const serverList = document.getElementById('serverList');
+serverList.innerHTML = '';
+db.ref('servers').on('value', snapshot => {
+    serverList.innerHTML = '';
+    snapshot.forEach(child => {
+        const data = child.val();
+        const initials = getInitials(data.gebruiker || '');
+        const row = document.createElement('tr');
+
+        row.innerHTML = `
+            <td class="px-4 py-2 border">${data.servernaam}</td>
+            <td class="px-4 py-2 border">
+                <div class="flex items-center space-x-2">
+                    <div class="bg-gray-200 rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">${initials}</div>
+                    <span class="text-sm">${data.gebruiker}</span>
+                </div>
+            </td>
+            <td class="px-4 py-2 border">${data.pakket}</td>
+            <td class="px-4 py-2 border whitespace-nowrap">${data.datum}</td>
+            <td class="px-4 py-2 border">${createStatusBadge(data.status || 'actief')}
+            <td class="px-4 py-2 border">
+              <button onclick="editServer('${child.key}')" class="text-blue-600 hover:text-blue-800"><i class="fas fa-edit"></i></button>
+              <button onclick="deleteServer('${child.key}')" class="text-red-600 hover:text-red-800"><i class="fas fa-trash"></i></button>
+            </td>
+        `;
+        serverList.appendChild(row);
+    });
+});
+    }
+    
+    function telActieveServers() {
+        db.ref('servers').on('value', snapshot => {
+            let count = 0;
+            snapshot.forEach(child => {
+            const data = child.val();
+            if (data.status && data.status.toLowerCase() === 'actief') {
+                count++;
+            }
+            });
+            document.getElementById('aantalActieveServers').textContent = count;
+        });
+    }
+
+    function teluitgeschakeldServers() {
+        db.ref('servers').on('value', snapshot => {
+            let count = 0;
+            snapshot.forEach(child => {
+                const data = child.val();
+                if (data.status && data.status.toLowerCase() === 'uitgeschakeld') {
+                    count++;
+                }
+            });
+            document.getElementById('aanstaluitgeschakeld').textContent = count;
+        });
+    }
+
+    function telActieveGebruikers() {
+    db.ref('/status').orderByChild('state').equalTo('online').on('value', snapshot => {
+        const onlineCount = snapshot.numChildren();
+        document.getElementById('aantalActivegebruikers').textContent = onlineCount;
+    });
+    }
+
+    function telonderhoudactive() {
+        db.ref('servers').on('value', snapshot => {
+            let count = 0;
+            snapshot.forEach(child => {
+                const data = child.val();
+                if (data.status && data.status.toLowerCase() === 'onderhoud') {
+                    count++;
+                }
+            });
+            document.getElementById('aantalOnderhoud').textContent = count;
+        });
+    }
+
+    function deleteServer(id) {
+      if (confirm('Weet je zeker dat je deze server wilt verwijderen?')) {
+        db.ref('servers/' + id).remove();
+      }
+    }
+  </script>
+</body>
+</html>
